@@ -71,6 +71,8 @@
   .member-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;}
   .settings-section-title{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px;font-weight:600;}
   .settings-section{margin-bottom:18px;}
+  .dev-check{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#4ea3f7;color:#fff;border-radius:50%;font-size:9px;vertical-align:middle;margin-left:3px;flex-shrink:0;}
+  .dev-pill{display:inline-flex;align-items:center;gap:3px;background:#4ea3f7;color:#fff;font-size:11px;font-weight:700;padding:2px 8px 2px 6px;border-radius:10px;vertical-align:middle;margin-left:6px;}
   #stories-bar{display:flex;gap:14px;padding:10px 12px 6px;overflow-x:auto;}
   #stories-bar::-webkit-scrollbar{display:none;}
   .story-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;width:58px;}
@@ -178,7 +180,7 @@
           <input id="profile-avatar-input" type="file" accept="image/*" style="display:none;" />
         </div>
         <div style="flex:1;">
-          <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Мой ник (логин)</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:4px;">Мой ник (логин) <span id="profile-dev-badge"></span></div>
           <input id="profile-name-input" disabled style="width:100%;padding:7px 10px;border-radius:8px;border:none;background:var(--panel2);color:var(--muted);font-size:13px;outline:none;" />
           <button id="profile-avatar-btn" style="margin-top:5px;background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;padding:0;">Сменить фото</button>
         </div>
@@ -343,6 +345,20 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const auth = firebase.auth();
 
+// Логин, который получает значок "Разработчик" и уведомления о регистрациях
+const ADMIN_USERNAME = 'slem2';
+function isDevUsername(name){
+  return !!name && name.toLowerCase() === ADMIN_USERNAME;
+}
+// Маленький значок (для тесных мест — списка чатов, участников группы)
+function devCheckHtml(name){
+  return isDevUsername(name) ? '<span class="dev-check" title="Разработчик">✓</span>' : '';
+}
+// Полный значок с подписью (для шапки чата, настроек)
+function devPillHtml(name){
+  return isDevUsername(name) ? '<span class="dev-pill" title="Разработчик">✓ Разработчик</span>' : '';
+}
+
 // Теперь личность определяется настоящим логином (auth.uid), а не случайным
 // id браузера — так можно писать по-настоящему лично, только вдвоём
 let myClientId = null;
@@ -460,10 +476,7 @@ function startApp(){
   watchNewRegistrations();
 }
 
-// Уведомление владельцу приложения о каждом новом зарегистрированном
-// пользователе. ADMIN_USERNAME — это логин, под которым нужно получать
-// такие уведомления (сейчас настроено на "slem2").
-const ADMIN_USERNAME = 'slem2';
+// Уведомление владельцу приложения о каждом новом зарегистрированном пользователе
 const ADMIN_LOG_CHAT_ID = 'admin_registration_log';
 function watchNewRegistrations(){
   if(!myProfile.name || myProfile.name.toLowerCase() !== ADMIN_USERNAME) return;
@@ -654,6 +667,7 @@ function saveProfileAvatar(){
 
 function applyProfileToUI(){
   document.getElementById('profile-name-input').value = myProfile.name;
+  document.getElementById('profile-dev-badge').innerHTML = devPillHtml(myProfile.name);
   const preview = document.getElementById('profile-avatar-preview');
   const placeholder = document.getElementById('profile-avatar-placeholder');
   if(myProfile.avatar){
@@ -681,10 +695,11 @@ function renderChatList(){
       : `<div class="avatar">${isGroup ? '👥' : initials(chat.name)}</div>`;
     const unread = unreadCount(chat);
     const badgeHtml = unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : '';
+    const nameDevBadge = !isGroup ? devCheckHtml(chat.name) : '';
     div.innerHTML = `
       ${avatarHtml}
       <div class="chat-meta">
-        <div class="chat-name">${chat.name}</div>
+        <div class="chat-name">${chat.name}${nameDevBadge}</div>
         <div class="chat-last">${last ? last.text : ''}</div>
       </div>
       ${badgeHtml}`;
@@ -694,10 +709,10 @@ function renderChatList(){
 }
 
 function updateChatHeader(chat){
-  document.getElementById('chat-header-name').textContent = chat.name;
+  const isGroup = chat.meta && chat.meta.type === 'group';
+  document.getElementById('chat-header-name').innerHTML = chat.name + (!isGroup ? devPillHtml(chat.name) : '');
   const headerAvatar = document.getElementById('chat-header-avatar');
   const headerFallback = document.getElementById('chat-header-avatar-fallback');
-  const isGroup = chat.meta && chat.meta.type === 'group';
   if(chat.avatar){
     headerAvatar.src = chat.avatar; headerAvatar.style.display = 'block';
     headerFallback.style.display = 'none';
@@ -746,7 +761,7 @@ function renderMessages(){
     const div = document.createElement('div');
     div.className = 'bubble ' + (isMine ? 'out' : 'in');
     const isGroup = chat.meta && chat.meta.type === 'group';
-    const senderLabel = (!isMine && isGroup && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}</div>` : '';
+    const senderLabel = (!isMine && isGroup && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}${devCheckHtml(m.senderName)}</div>` : '';
     div.innerHTML = `${senderLabel}${m.text}<time>${m.time}</time>`;
     box.appendChild(div);
   });
@@ -1083,7 +1098,7 @@ function renderGroupInfoMembers(chat){
     const avatarHtml = u.avatar
       ? `<img src="${u.avatar}" class="avatar" style="width:34px;height:34px;object-fit:cover;" />`
       : `<div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials(u.username || '?')}</div>`;
-    row.innerHTML = `${avatarHtml}<div style="font-size:13px;">${u.username || '?'}${uid === myClientId ? ' (ты)' : ''}</div>`;
+    row.innerHTML = `${avatarHtml}<div style="font-size:13px;">${u.username || '?'}${uid === myClientId ? ' (ты)' : ''}${devCheckHtml(u.username)}</div>`;
     box.appendChild(row);
   });
 }
