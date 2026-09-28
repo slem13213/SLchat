@@ -30,10 +30,17 @@
   .chat-last{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   #main{flex:1;display:flex;flex-direction:column;background:var(--bg);}
   #chat-header{padding:14px 16px;border-bottom:1px solid #0a0f15;font-weight:600;background:var(--panel);display:flex;align-items:center;}
-  #call-btn{margin-left:auto;background:none;border:none;color:var(--accent);font-size:19px;cursor:pointer;padding:6px;}
+  #video-call-btn{margin-left:auto;background:none;border:none;color:var(--accent);font-size:19px;cursor:pointer;padding:6px;}
+  #call-btn{background:none;border:none;color:var(--accent);font-size:19px;cursor:pointer;padding:6px;}
   .call-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:20;display:none;align-items:center;justify-content:center;}
-  .call-box{background:var(--panel);border-radius:16px;padding:28px 24px;width:280px;max-width:90vw;text-align:center;}
+  .call-box{background:var(--panel);border-radius:16px;padding:28px 24px;width:280px;max-width:90vw;text-align:center;position:relative;}
+  .call-box.video-mode{width:340px;max-width:94vw;padding:16px;}
   .call-avatar{width:84px;height:84px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:32px;margin:0 auto 14px;object-fit:cover;}
+  #remote-video{display:none;width:100%;max-height:55vh;border-radius:12px;background:#000;object-fit:cover;margin-bottom:10px;}
+  #local-video{display:none;position:absolute;width:76px;height:104px;border-radius:10px;object-fit:cover;top:14px;right:14px;border:2px solid var(--panel);background:#000;z-index:1;transform:scaleX(-1);}
+  .call-box.video-mode #remote-video{display:block;}
+  .call-box.video-mode #local-video{display:block;}
+  .call-box.video-mode .call-avatar{display:none;}
   .call-status{font-size:13px;color:var(--muted);margin-bottom:20px;}
   .call-actions{display:flex;gap:14px;justify-content:center;}
   .call-action-btn{width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;font-size:22px;display:flex;align-items:center;justify-content:center;color:#fff;}
@@ -269,6 +276,7 @@
         <div id="chat-header-avatar-fallback" class="avatar" style="width:32px;height:32px;display:none;font-size:14px;"></div>
       </div>
       <span id="chat-header-name">Выбери чат</span>
+      <button id="video-call-btn" title="Видеозвонок" style="display:none;">🎥</button>
       <button id="call-btn" title="Позвонить" style="display:none;">📞</button>
     </div>
     <div id="messages"></div>
@@ -285,7 +293,7 @@
   <div class="call-box">
     <div id="incoming-call-avatar" class="call-avatar">?</div>
     <div id="incoming-call-name" style="font-size:16px;font-weight:600;margin-bottom:4px;">Кто-то</div>
-    <div class="call-status">Входящий звонок...</div>
+    <div id="incoming-call-status" class="call-status">Входящий звонок...</div>
     <div class="call-actions">
       <button id="decline-call-btn" class="call-action-btn call-decline" title="Отклонить">✕</button>
       <button id="accept-call-btn" class="call-action-btn call-accept" title="Принять">📞</button>
@@ -295,13 +303,16 @@
 
 <!-- Активный / исходящий звонок -->
 <div id="active-call-overlay" class="call-overlay">
-  <div class="call-box">
+  <div class="call-box" id="active-call-box">
+    <video id="remote-video" autoplay playsinline></video>
+    <video id="local-video" autoplay playsinline muted></video>
     <div id="active-call-avatar" class="call-avatar">?</div>
     <div id="active-call-name" style="font-size:16px;font-weight:600;margin-bottom:4px;">Кто-то</div>
     <div id="active-call-status" class="call-status">Звоним...</div>
     <button id="enable-audio-btn" style="display:none;margin-bottom:14px;padding:8px 14px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:12px;cursor:pointer;">🔊 Включить звук</button>
     <div class="call-actions">
       <button id="mute-call-btn" class="call-action-btn call-mute" title="Микрофон">🎤</button>
+      <button id="camera-call-btn" class="call-action-btn call-mute" title="Камера" style="display:none;">🎥</button>
       <button id="end-call-btn" class="call-action-btn call-end" title="Завершить">✕</button>
     </div>
   </div>
@@ -722,7 +733,10 @@ function updateChatHeader(chat){
     headerFallback.textContent = isGroup ? '👥' : initials(chat.name);
   }
   const callBtn = document.getElementById('call-btn');
-  callBtn.style.display = (chat.meta && chat.meta.type === 'dm') ? 'block' : 'none';
+  const videoCallBtn = document.getElementById('video-call-btn');
+  const isDmChat = chat.meta && chat.meta.type === 'dm';
+  callBtn.style.display = isDmChat ? 'block' : 'none';
+  videoCallBtn.style.display = isDmChat ? 'block' : 'none';
   const clickable = isGroup ? 'pointer' : 'default';
   document.getElementById('chat-header-avatar-wrap').style.cursor = clickable;
   document.getElementById('chat-header-name').style.cursor = clickable;
@@ -1204,19 +1218,34 @@ let currentCallChatId = null;
 let currentCallOtherUid = null;
 let activeCandidatesRef = null;
 let callRole = null; // 'caller' | 'callee'
+let currentCallHasVideo = false;
+let isCameraOff = false;
 
 function attachPeerCommon(pc){
   pc.ontrack = e => {
+    const stream = e.streams[0];
+    const hasVideoTrack = stream.getVideoTracks().length > 0;
     const audioEl = document.getElementById('remote-audio');
-    audioEl.srcObject = e.streams[0];
-    audioEl.muted = false;
-    const playPromise = audioEl.play();
-    if(playPromise && playPromise.catch){
-      playPromise.catch(() => {
-        // Браузер заблокировал автовоспроизведение — показываем кнопку,
-        // чтобы включить звук одним нажатием
-        document.getElementById('enable-audio-btn').style.display = 'inline-flex';
-      });
+    let blocked = false;
+    if(hasVideoTrack){
+      const videoEl = document.getElementById('remote-video');
+      videoEl.srcObject = stream;
+      const vPlay = videoEl.play();
+      if(vPlay && vPlay.catch) vPlay.catch(() => { blocked = true; });
+      // Видео-элемент сам воспроизводит звук из потока — заглушаем
+      // отдельный audio-элемент, чтобы не было эха
+      audioEl.srcObject = stream;
+      audioEl.muted = true;
+    } else {
+      audioEl.srcObject = stream;
+      audioEl.muted = false;
+      const aPlay = audioEl.play();
+      if(aPlay && aPlay.catch) aPlay.catch(() => { blocked = true; });
+    }
+    if(blocked){
+      // Браузер заблокировал автовоспроизведение — показываем кнопку,
+      // чтобы включить звук/видео одним нажатием
+      document.getElementById('enable-audio-btn').style.display = 'inline-flex';
     }
   };
   let alreadyConnected = false;
@@ -1291,26 +1320,32 @@ function avatarInitialsHtml(el, name, avatarUrl){
   }
 }
 
-async function startCall(chatId){
+async function startCall(chatId, withVideo){
   const otherUid = getOtherUidForChat(chatId);
   if(!otherUid) return;
   currentCallChatId = chatId;
   currentCallOtherUid = otherUid;
+  currentCallHasVideo = !!withVideo;
   callRole = 'caller';
   const u = usersCache[otherUid] || {};
   document.getElementById('active-call-name').textContent = u.username || 'Пользователь';
   avatarInitialsHtml(document.getElementById('active-call-avatar'), u.username, u.avatar);
-  setCallStatus('Звоним...');
+  setCallStatus(currentCallHasVideo ? 'Видеозвонок...' : 'Звоним...');
   document.getElementById('active-call-overlay').style.display = 'flex';
+  document.getElementById('active-call-box').classList.toggle('video-mode', currentCallHasVideo);
+  document.getElementById('camera-call-btn').style.display = currentCallHasVideo ? 'flex' : 'none';
   playRingtone();
 
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: currentCallHasVideo ? { facingMode: 'user' } : false });
   } catch(e) {
-    setCallStatus('Нет доступа к микрофону');
+    setCallStatus(currentCallHasVideo ? 'Нет доступа к камере/микрофону' : 'Нет доступа к микрофону');
     setTimeout(() => hideCallOverlays(), 1500);
     stopRingtone();
     return;
+  }
+  if(currentCallHasVideo){
+    document.getElementById('local-video').srcObject = localStream;
   }
   peerConn = new RTCPeerConnection(ICE_SERVERS);
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
@@ -1327,7 +1362,7 @@ async function startCall(chatId){
   const offer = await peerConn.createOffer();
   await peerConn.setLocalDescription(offer);
   db.ref('calls/' + chatId).set({
-    status: 'ringing', from: myClientId, callerName: myProfile.name,
+    status: 'ringing', from: myClientId, callerName: myProfile.name, hasVideo: currentCallHasVideo,
     offer: { sdp: offer.sdp, type: offer.type }, startedAt: Date.now()
   });
 }
@@ -1348,10 +1383,12 @@ function showIncomingCall(chatId, call){
   incomingCallData = { chatId, call };
   currentCallChatId = chatId;
   currentCallOtherUid = call.from;
+  currentCallHasVideo = !!call.hasVideo;
   const u = usersCache[call.from] || {};
   const callerName = call.callerName || u.username || 'Кто-то';
   document.getElementById('incoming-call-name').textContent = callerName;
   avatarInitialsHtml(document.getElementById('incoming-call-avatar'), callerName, u.avatar);
+  document.getElementById('incoming-call-status').textContent = currentCallHasVideo ? 'Входящий видеозвонок...' : 'Входящий звонок...';
   document.getElementById('incoming-call-overlay').style.display = 'flex';
   playRingtone();
   if(navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
@@ -1369,18 +1406,24 @@ async function acceptCall(){
   document.getElementById('incoming-call-overlay').style.display = 'none';
   stopRingtone();
   callRole = 'callee';
+  currentCallHasVideo = !!call.hasVideo;
   const u = usersCache[call.from] || {};
   document.getElementById('active-call-name').textContent = call.callerName || u.username || 'Пользователь';
   avatarInitialsHtml(document.getElementById('active-call-avatar'), call.callerName || u.username, u.avatar);
   setCallStatus('Соединяемся...');
   document.getElementById('active-call-overlay').style.display = 'flex';
+  document.getElementById('active-call-box').classList.toggle('video-mode', currentCallHasVideo);
+  document.getElementById('camera-call-btn').style.display = currentCallHasVideo ? 'flex' : 'none';
 
   try {
-    localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: currentCallHasVideo ? { facingMode: 'user' } : false });
   } catch(e) {
-    setCallStatus('Нет доступа к микрофону');
+    setCallStatus(currentCallHasVideo ? 'Нет доступа к камере/микрофону' : 'Нет доступа к микрофону');
     setTimeout(() => { hideCallOverlays(); db.ref('calls/' + chatId).set({ status: 'ended' }); }, 1500);
     return;
+  }
+  if(currentCallHasVideo){
+    document.getElementById('local-video').srcObject = localStream;
   }
   peerConn = new RTCPeerConnection(ICE_SERVERS);
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
@@ -1409,6 +1452,7 @@ function declineCall(){
   stopRingtone();
   incomingCallData = null;
   currentCallChatId = null;
+  currentCallHasVideo = false;
 }
 
 function setCallStatus(text){
@@ -1441,10 +1485,23 @@ function endCallCleanup(){
   document.getElementById('mute-call-btn').classList.remove('muted');
   document.getElementById('mute-call-btn').textContent = '🎤';
   document.getElementById('enable-audio-btn').style.display = 'none';
+  document.getElementById('active-call-box').classList.remove('video-mode');
+  document.getElementById('camera-call-btn').style.display = 'none';
+  document.getElementById('camera-call-btn').classList.remove('muted');
+  document.getElementById('camera-call-btn').textContent = '🎥';
+  const remoteVideoEl = document.getElementById('remote-video');
+  remoteVideoEl.srcObject = null;
+  const localVideoEl = document.getElementById('local-video');
+  localVideoEl.srcObject = null;
+  const remoteAudioEl = document.getElementById('remote-audio');
+  remoteAudioEl.srcObject = null;
+  remoteAudioEl.muted = false;
   isMuted = false;
+  isCameraOff = false;
   incomingCallData = null;
   currentCallChatId = null;
   currentCallOtherUid = null;
+  currentCallHasVideo = false;
   callRole = null;
 }
 
@@ -1453,13 +1510,14 @@ function hangUp(){
   endCallCleanup();
 }
 
-document.getElementById('call-btn').onclick = () => { if(activeChatId) startCall(activeChatId); };
+document.getElementById('call-btn').onclick = () => { if(activeChatId) startCall(activeChatId, false); };
+document.getElementById('video-call-btn').onclick = () => { if(activeChatId) startCall(activeChatId, true); };
 document.getElementById('accept-call-btn').onclick = acceptCall;
 document.getElementById('decline-call-btn').onclick = declineCall;
 document.getElementById('end-call-btn').onclick = hangUp;
 document.getElementById('enable-audio-btn').onclick = () => {
-  const audioEl = document.getElementById('remote-audio');
-  audioEl.play().catch(()=>{});
+  document.getElementById('remote-audio').play().catch(()=>{});
+  document.getElementById('remote-video').play().catch(()=>{});
   document.getElementById('enable-audio-btn').style.display = 'none';
 };
 document.getElementById('mute-call-btn').onclick = () => {
@@ -1468,6 +1526,13 @@ document.getElementById('mute-call-btn').onclick = () => {
   localStream.getAudioTracks().forEach(t => t.enabled = !isMuted);
   document.getElementById('mute-call-btn').classList.toggle('muted', isMuted);
   document.getElementById('mute-call-btn').textContent = isMuted ? '🔇' : '🎤';
+};
+document.getElementById('camera-call-btn').onclick = () => {
+  if(!localStream) return;
+  isCameraOff = !isCameraOff;
+  localStream.getVideoTracks().forEach(t => t.enabled = !isCameraOff);
+  document.getElementById('camera-call-btn').classList.toggle('muted', isCameraOff);
+  document.getElementById('camera-call-btn').textContent = isCameraOff ? '📷' : '🎥';
 };
 
 // Иконка приложения — используется при "Добавить на главный экран" на телефоне
