@@ -2396,6 +2396,10 @@ async function startCall(chatId, withVideo){
     status: 'ringing', from: myClientId, callerName: myProfile.name, hasVideo: currentCallHasVideo,
     offer: { sdp: offer.sdp, type: offer.type }, startedAt: Date.now()
   });
+  // Присылаем push и про звонок тоже — иначе если собеседник не в
+  // приложении, он просто не узнает, что ему звонят
+  const callChat = chats.find(c => c.id === chatId);
+  if(callChat) pushNotifyChat(callChat, (currentCallHasVideo ? '📹 Видеозвонок' : '📞 Звонок'));
 }
 
 // ----- Групповой звонок: тот, кто начинает, создаёт новую "сессию";
@@ -2438,6 +2442,7 @@ async function startGroupCall(chatId, withVideo){
     startedBy: myClientId, startedByName: myProfile.name, startedAt: Date.now()
   });
   await db.ref('calls/' + chatId + '/sessions/' + sessionId + '/participants/' + myClientId).set({ username: myProfile.name, joinedAt: Date.now() });
+  pushNotifyChat(chat, (groupCallHasVideo ? '📹 Видеозвонок' : '📞 Звонок') + ' в группе');
   stopRingtone();
   setCallStatus('Ждём участников...');
   startCallTimer();
