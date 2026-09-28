@@ -71,6 +71,20 @@
   .member-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;}
   .settings-section-title{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px;font-weight:600;}
   .settings-section{margin-bottom:18px;}
+  #stories-bar{display:flex;gap:14px;padding:10px 12px 6px;overflow-x:auto;}
+  #stories-bar::-webkit-scrollbar{display:none;}
+  .story-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;flex-shrink:0;width:58px;}
+  .story-ring{width:56px;height:56px;border-radius:50%;padding:2.5px;background:linear-gradient(45deg,#f7b34e,#f76e6e,#7c5cf0);position:relative;}
+  .story-ring.seen{background:var(--muted);opacity:0.5;}
+  .story-ring.mine{background:var(--panel2);}
+  .story-ring img{width:100%;height:100%;border-radius:50%;border:2px solid var(--panel);object-fit:cover;display:block;}
+  .story-ring .avatar{width:100%;height:100%;border:2px solid var(--panel);box-sizing:border-box;}
+  .story-plus{position:absolute;bottom:-1px;right:-1px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;border:2px solid var(--panel);}
+  .story-label{font-size:11px;color:var(--text);max-width:58px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #story-viewer{background:rgba(0,0,0,0.92);z-index:25;}
+  #story-viewer .story-box{position:relative;width:100%;max-width:420px;height:82vh;max-height:720px;display:flex;flex-direction:column;}
+  #story-viewer-header{display:flex;align-items:center;gap:10px;padding:10px 14px;}
+  #story-viewer-image{flex:1;width:100%;object-fit:contain;border-radius:10px;background:#000;}
   #credit{
     position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));
     display:flex;align-items:center;gap:5px;
@@ -118,6 +132,8 @@
         <button id="settings-btn" title="Настройки" style="background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:6px;">⚙️</button>
       </div>
     </div>
+    <div id="stories-bar"></div>
+    <input id="story-file-input" type="file" accept="image/*" style="display:none;" />
     <input id="search-input" placeholder="Поиск..." style="margin:0 12px 10px;padding:8px 12px;border-radius:14px;border:none;background:var(--panel2);color:var(--text);font-size:13px;outline:none;" />
     <div id="chat-list"></div>
   </div>
@@ -246,13 +262,31 @@
     <div id="active-call-avatar" class="call-avatar">?</div>
     <div id="active-call-name" style="font-size:16px;font-weight:600;margin-bottom:4px;">Кто-то</div>
     <div id="active-call-status" class="call-status">Звоним...</div>
+    <button id="enable-audio-btn" style="display:none;margin-bottom:14px;padding:8px 14px;border-radius:20px;border:none;background:var(--accent);color:#fff;font-size:12px;cursor:pointer;">🔊 Включить звук</button>
     <div class="call-actions">
       <button id="mute-call-btn" class="call-action-btn call-mute" title="Микрофон">🎤</button>
       <button id="end-call-btn" class="call-action-btn call-end" title="Завершить">✕</button>
     </div>
   </div>
 </div>
-<audio id="remote-audio" autoplay></audio>
+<audio id="remote-audio" autoplay playsinline></audio>
+<audio id="ringtone-audio" loop src="data:audio/mp3;base64,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VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NgxHAAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NgxHAAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYMRwAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYMRwAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ=="></audio>
+
+<!-- Просмотр истории -->
+<div id="story-viewer" class="call-overlay">
+  <div class="story-box">
+    <div id="story-viewer-header">
+      <div id="story-viewer-avatar" class="avatar" style="width:34px;height:34px;flex-shrink:0;"></div>
+      <div style="flex:1;min-width:0;">
+        <div id="story-viewer-name" style="color:#fff;font-weight:600;font-size:14px;"></div>
+        <div id="story-viewer-time" style="color:rgba(255,255,255,0.6);font-size:11px;"></div>
+      </div>
+      <button id="story-delete-btn" style="display:none;background:none;border:none;color:#f76e6e;font-size:18px;cursor:pointer;padding:6px;">🗑</button>
+      <button id="story-close-btn" style="background:none;border:none;color:#fff;font-size:22px;cursor:pointer;padding:6px;">✕</button>
+    </div>
+    <img id="story-viewer-image" />
+  </div>
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-app-compat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/firebase@10.13.0/firebase-database-compat.js"></script>
@@ -383,6 +417,30 @@ function startApp(){
     snap.forEach(child => { if(child.val()) ids.push(child.key); });
     syncChatMembership(ids);
   });
+  db.ref('stories').on('value', snap => {
+    storiesCache = snap.val() || {};
+    renderStoriesBar();
+  });
+  watchNewRegistrations();
+}
+
+// Уведомление владельцу приложения о каждом новом зарегистрированном
+// пользователе. ADMIN_USERNAME — это логин, под которым нужно получать
+// такие уведомления (сейчас настроено на "slem2").
+const ADMIN_USERNAME = 'slem2';
+function watchNewRegistrations(){
+  if(!myProfile.name || myProfile.name.toLowerCase() !== ADMIN_USERNAME) return;
+  db.ref('usernames').once('value').then(initialSnap => {
+    const known = new Set();
+    initialSnap.forEach(child => known.add(child.key));
+    db.ref('usernames').on('child_added', child => {
+      if(known.has(child.key)) return;
+      known.add(child.key);
+      if(notifPermission === 'granted'){
+        try { new Notification('Новая регистрация в SLchat', { body: '@' + child.key + ' только что зарегистрировался(-лась)' }); } catch(e) {}
+      }
+    });
+  });
 }
 
 // Начать личный чат с конкретным человеком по его логину
@@ -474,10 +532,14 @@ function listenToChat(chat){
     const newLast = msgs[msgs.length - 1];
 
     // Показываем уведомление, если это НЕ первая загрузка, сообщение новое,
-    // не наше собственное, и этот чат сейчас не открыт
-    if(!firstLoad && newLast && newLast !== prevLast && newLast.clientId !== myClientId && activeChatId !== chat.id){
+    // не наше собственное, и мы сейчас реально не смотрим в этот чат
+    // (чат не открыт, либо вкладка вообще свёрнута/неактивна)
+    if(!firstLoad && newLast && newLast !== prevLast && newLast.clientId !== myClientId && (activeChatId !== chat.id || document.hidden)){
       if(notifPermission === 'granted'){
-        try { new Notification(newLast.senderName || chat.name, { body: newLast.text, tag: chat.id }); } catch(e) {}
+        try {
+          const n = new Notification(newLast.senderName || chat.name, { body: newLast.text, tag: 'chat-' + chat.id });
+          n.onclick = () => { window.focus(); openChat(chat.id); };
+        } catch(e) {}
       }
     }
     firstLoad = false;
@@ -629,6 +691,118 @@ function sendMessage(){
 document.getElementById('search-input').addEventListener('input', e => {
   searchQuery = e.target.value;
   renderChatList();
+});
+
+// ===== Истории (сторис) — фото живёт 24 часа, потом само пропадает из ленты =====
+let storiesCache = {};
+const STORY_TTL = 24 * 60 * 60 * 1000;
+const STORY_SEEN_KEY = 'slchat_story_seen';
+let seenStories = {};
+try { seenStories = JSON.parse(localStorage.getItem(STORY_SEEN_KEY) || '{}'); } catch(e) {}
+function saveSeenStories(){ try { localStorage.setItem(STORY_SEEN_KEY, JSON.stringify(seenStories)); } catch(e) {} }
+
+function timeAgo(ts){
+  const diffMin = Math.floor((Date.now() - ts) / 60000);
+  if(diffMin < 1) return 'только что';
+  if(diffMin < 60) return diffMin + ' мин назад';
+  return Math.floor(diffMin / 60) + ' ч назад';
+}
+
+function renderStoriesBar(){
+  const bar = document.getElementById('stories-bar');
+  bar.innerHTML = '';
+  const now = Date.now();
+
+  const mine = storiesCache[myClientId];
+  const mineActive = mine && (now - mine.createdAt) < STORY_TTL;
+  const mineDiv = document.createElement('div');
+  mineDiv.className = 'story-item';
+  const mineAvatarHtml = myProfile.avatar
+    ? `<img src="${myProfile.avatar}"/>`
+    : `<div class="avatar" style="width:100%;height:100%;">${initials(myProfile.name || 'Я')}</div>`;
+  mineDiv.innerHTML = `
+    <div class="story-ring ${mineActive ? '' : 'mine'}">
+      ${mineAvatarHtml}
+      ${mineActive ? '' : '<div class="story-plus">+</div>'}
+    </div>
+    <div class="story-label">Моя история</div>`;
+  mineDiv.onclick = () => {
+    if(mineActive) openStoryViewer(myClientId);
+    else document.getElementById('story-file-input').click();
+  };
+  bar.appendChild(mineDiv);
+
+  Object.keys(storiesCache).forEach(uid => {
+    if(uid === myClientId) return;
+    const s = storiesCache[uid];
+    if(!s || (now - s.createdAt) >= STORY_TTL) return;
+    const seen = (seenStories[uid] || 0) >= s.createdAt;
+    const avatarHtml = s.avatar
+      ? `<img src="${s.avatar}"/>`
+      : `<div class="avatar" style="width:100%;height:100%;">${initials(s.username || '?')}</div>`;
+    const div = document.createElement('div');
+    div.className = 'story-item';
+    div.innerHTML = `
+      <div class="story-ring ${seen ? 'seen' : ''}">${avatarHtml}</div>
+      <div class="story-label">${s.username || '?'}</div>`;
+    div.onclick = () => openStoryViewer(uid);
+    bar.appendChild(div);
+  });
+}
+
+let currentStoryUid = null;
+function openStoryViewer(uid){
+  const s = storiesCache[uid];
+  if(!s) return;
+  currentStoryUid = uid;
+  document.getElementById('story-viewer-image').src = s.image;
+  document.getElementById('story-viewer-name').textContent = s.username || '?';
+  document.getElementById('story-viewer-time').textContent = timeAgo(s.createdAt);
+  avatarInitialsHtml(document.getElementById('story-viewer-avatar'), s.username, s.avatar);
+  document.getElementById('story-delete-btn').style.display = (uid === myClientId) ? 'block' : 'none';
+  document.getElementById('story-viewer').style.display = 'flex';
+  if(uid !== myClientId){
+    seenStories[uid] = Math.max(seenStories[uid] || 0, s.createdAt);
+    saveSeenStories();
+    renderStoriesBar();
+  }
+}
+document.getElementById('story-close-btn').onclick = () => {
+  document.getElementById('story-viewer').style.display = 'none';
+  currentStoryUid = null;
+};
+document.getElementById('story-delete-btn').onclick = () => {
+  if(currentStoryUid === myClientId){
+    db.ref('stories/' + myClientId).remove();
+    document.getElementById('story-viewer').style.display = 'none';
+  }
+};
+
+document.getElementById('story-file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      // Сжимаем фото, чтобы история грузилась быстро, но не обрезаем квадратом
+      const maxSize = 720;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h >= w && h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      db.ref('stories/' + myClientId).set({
+        image: dataUrl, createdAt: Date.now(),
+        username: myProfile.name, avatar: myProfile.avatar || null
+      });
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
 });
 
 document.getElementById('send-btn').onclick = sendMessage;
@@ -815,11 +989,16 @@ document.getElementById('back-btn').onclick = closeChat;
 
 // ===== Аудиозвонки (WebRTC + Firebase как "телефонная станция" для обмена
 // техническими данными о соединении). Публичные STUN-серверы Google помогают
-// двум телефонам найти друг друга напрямую; без TURN-сервера звонок иногда
-// может не пройти в сложных мобильных сетях, но обычно на Wi-Fi работает. =====
+// двум телефонам найти друг друга напрямую. Добавлен ещё и TURN-сервер —
+// он "пересылает" звук, когда телефоны не могут достучаться друг до друга
+// напрямую (разные сети, мобильный интернет и т.п.) — именно из-за его
+// отсутствия раньше звонок мог "соединяться", но без звука. =====
 const ICE_SERVERS = { iceServers: [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' }
+  { urls: 'stun:stun1.l.google.com:19302' },
+  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
 ]};
 
 let peerConn = null;
@@ -828,6 +1007,34 @@ let currentCallChatId = null;
 let currentCallOtherUid = null;
 let activeCandidatesRef = null;
 let callRole = null; // 'caller' | 'callee'
+
+function attachPeerCommon(pc){
+  pc.ontrack = e => {
+    const audioEl = document.getElementById('remote-audio');
+    audioEl.srcObject = e.streams[0];
+    audioEl.muted = false;
+    const playPromise = audioEl.play();
+    if(playPromise && playPromise.catch){
+      playPromise.catch(() => {
+        // Браузер заблокировал автовоспроизведение — показываем кнопку,
+        // чтобы включить звук одним нажатием
+        document.getElementById('enable-audio-btn').style.display = 'inline-flex';
+      });
+    }
+  };
+  pc.onconnectionstatechange = () => {
+    if(!peerConn || pc !== peerConn) return;
+    if(pc.connectionState === 'connected'){
+      setCallStatus('Соединено');
+      startCallTimer();
+      stopRingtone();
+    } else if(pc.connectionState === 'failed' || pc.connectionState === 'disconnected'){
+      setCallStatus('Связь потеряна');
+    } else if(pc.connectionState === 'connecting'){
+      setCallStatus('Соединяемся...');
+    }
+  };
+}
 let callTimerInterval = null;
 let callWatchedChats = {}; // chatId -> true, для каких DM-чатов уже слушаем звонки
 let isMuted = false;
@@ -844,8 +1051,7 @@ function watchCallsForChat(chat){
     }
     if(call.status === 'active' && callRole === 'caller' && currentCallChatId === chat.id && call.answer && peerConn && !peerConn.currentRemoteDescription){
       peerConn.setRemoteDescription(new RTCSessionDescription(call.answer));
-      setCallStatus('Соединено');
-      startCallTimer();
+      setCallStatus('Соединяемся...');
     }
     if(call.status === 'ended' && currentCallChatId === chat.id){
       endCallCleanup();
@@ -881,17 +1087,19 @@ async function startCall(chatId){
   avatarInitialsHtml(document.getElementById('active-call-avatar'), u.username, u.avatar);
   setCallStatus('Звоним...');
   document.getElementById('active-call-overlay').style.display = 'flex';
+  playRingtone();
 
   try {
     localStream = await navigator.mediaDevices.getUserMedia({ audio: true });
   } catch(e) {
     setCallStatus('Нет доступа к микрофону');
     setTimeout(() => hideCallOverlays(), 1500);
+    stopRingtone();
     return;
   }
   peerConn = new RTCPeerConnection(ICE_SERVERS);
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-  peerConn.ontrack = e => { document.getElementById('remote-audio').srcObject = e.streams[0]; };
+  attachPeerCommon(peerConn);
   peerConn.onicecandidate = e => {
     if(e.candidate) db.ref('calls/' + chatId + '/candidates/' + myClientId).push(e.candidate.toJSON());
   };
@@ -909,21 +1117,42 @@ async function startCall(chatId){
   });
 }
 
+function playRingtone(){
+  const el = document.getElementById('ringtone-audio');
+  el.currentTime = 0;
+  el.play().catch(() => {});
+}
+function stopRingtone(){
+  const el = document.getElementById('ringtone-audio');
+  el.pause();
+  el.currentTime = 0;
+}
+
 let incomingCallData = null;
 function showIncomingCall(chatId, call){
   incomingCallData = { chatId, call };
   currentCallChatId = chatId;
   currentCallOtherUid = call.from;
   const u = usersCache[call.from] || {};
-  document.getElementById('incoming-call-name').textContent = call.callerName || u.username || 'Кто-то';
-  avatarInitialsHtml(document.getElementById('incoming-call-avatar'), call.callerName || u.username, u.avatar);
+  const callerName = call.callerName || u.username || 'Кто-то';
+  document.getElementById('incoming-call-name').textContent = callerName;
+  avatarInitialsHtml(document.getElementById('incoming-call-avatar'), callerName, u.avatar);
   document.getElementById('incoming-call-overlay').style.display = 'flex';
+  playRingtone();
+  if(navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
+  if(notifPermission === 'granted' && document.hidden){
+    try {
+      const n = new Notification('Входящий звонок', { body: callerName + ' звонит тебе в SLchat', tag: 'call-' + chatId });
+      n.onclick = () => { window.focus(); };
+    } catch(e) {}
+  }
 }
 
 async function acceptCall(){
   if(!incomingCallData) return;
   const { chatId, call } = incomingCallData;
   document.getElementById('incoming-call-overlay').style.display = 'none';
+  stopRingtone();
   callRole = 'callee';
   const u = usersCache[call.from] || {};
   document.getElementById('active-call-name').textContent = call.callerName || u.username || 'Пользователь';
@@ -940,7 +1169,7 @@ async function acceptCall(){
   }
   peerConn = new RTCPeerConnection(ICE_SERVERS);
   localStream.getTracks().forEach(t => peerConn.addTrack(t, localStream));
-  peerConn.ontrack = e => { document.getElementById('remote-audio').srcObject = e.streams[0]; };
+  attachPeerCommon(peerConn);
   peerConn.onicecandidate = e => {
     if(e.candidate) db.ref('calls/' + chatId + '/candidates/' + myClientId).push(e.candidate.toJSON());
   };
@@ -956,14 +1185,13 @@ async function acceptCall(){
   db.ref('calls/' + chatId).update({
     status: 'active', answer: { sdp: answer.sdp, type: answer.type }
   });
-  setCallStatus('Соединено');
-  startCallTimer();
 }
 
 function declineCall(){
   if(!incomingCallData) return;
   db.ref('calls/' + incomingCallData.chatId).set({ status: 'ended' });
   document.getElementById('incoming-call-overlay').style.display = 'none';
+  stopRingtone();
   incomingCallData = null;
   currentCallChatId = null;
 }
@@ -990,12 +1218,14 @@ function hideCallOverlays(){
 
 function endCallCleanup(){
   clearInterval(callTimerInterval);
+  stopRingtone();
   if(peerConn){ peerConn.close(); peerConn = null; }
   if(localStream){ localStream.getTracks().forEach(t => t.stop()); localStream = null; }
   if(activeCandidatesRef){ activeCandidatesRef.off(); activeCandidatesRef = null; }
   hideCallOverlays();
   document.getElementById('mute-call-btn').classList.remove('muted');
   document.getElementById('mute-call-btn').textContent = '🎤';
+  document.getElementById('enable-audio-btn').style.display = 'none';
   isMuted = false;
   incomingCallData = null;
   currentCallChatId = null;
@@ -1012,6 +1242,11 @@ document.getElementById('call-btn').onclick = () => { if(activeChatId) startCall
 document.getElementById('accept-call-btn').onclick = acceptCall;
 document.getElementById('decline-call-btn').onclick = declineCall;
 document.getElementById('end-call-btn').onclick = hangUp;
+document.getElementById('enable-audio-btn').onclick = () => {
+  const audioEl = document.getElementById('remote-audio');
+  audioEl.play().catch(()=>{});
+  document.getElementById('enable-audio-btn').style.display = 'none';
+};
 document.getElementById('mute-call-btn').onclick = () => {
   if(!localStream) return;
   isMuted = !isMuted;
@@ -1127,6 +1362,12 @@ auth.onAuthStateChanged(user => {
       document.getElementById('auth-screen').style.display = 'none';
       document.getElementById('app').style.display = 'flex';
       startApp();
+      // Сразу предлагаем включить уведомления (о новых сообщениях и звонках),
+      // чтобы не заставлять лезть в настройки самому. Если человек уже
+      // отвечал раньше (разрешил/запретил) — повторно не спрашиваем.
+      if(typeof Notification !== 'undefined' && Notification.permission === 'default'){
+        requestNotifPermission();
+      }
     });
   } else {
     myClientId = null;
