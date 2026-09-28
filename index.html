@@ -54,6 +54,12 @@
   }
   body[data-theme="light"] .bubble time{ color:rgba(0,0,0,0.4); }
   .theme-opt.selected, .color-opt.selected{ outline:2px solid var(--accent); }
+  .chat-mode-btn{flex:1;padding:8px;border-radius:10px;border:1px solid transparent;background:var(--panel2);color:var(--muted);cursor:pointer;font-size:13px;}
+  .chat-mode-btn.selected{background:var(--accent);color:#fff;}
+  .member-chip{display:flex;align-items:center;gap:5px;background:var(--panel2);color:var(--text);border-radius:20px;padding:4px 8px 4px 10px;font-size:12px;}
+  .member-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;}
+  .settings-section-title{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px;font-weight:600;}
+  .settings-section{margin-bottom:18px;}
   #credit{
     position:fixed;left:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));
     display:flex;align-items:center;gap:5px;
@@ -108,13 +114,25 @@
   <div id="add-chat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10;align-items:center;justify-content:center;">
     <div style="background:var(--panel);border-radius:14px;padding:20px;width:280px;max-width:90vw;">
       <h2 style="margin:0 0 14px;font-size:16px;">Новый чат</h2>
-      <input id="new-chat-name" placeholder="Название чата" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;" />
-      <label style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);margin-bottom:10px;cursor:pointer;">
-        <input id="new-chat-private" type="checkbox" style="width:15px;height:15px;" />
-        🔒 Личный чат с конкретным человеком (видите только вы двое)
-      </label>
-      <input id="new-chat-partner" placeholder="Логин собеседника" style="display:none;width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
-      <div id="add-chat-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:6px;margin-bottom:14px;">
+        <button id="mode-dm-btn" class="chat-mode-btn selected" data-mode="dm">🔒 Личный чат</button>
+        <button id="mode-group-btn" class="chat-mode-btn" data-mode="group">👥 Группа</button>
+      </div>
+
+      <div id="dm-fields">
+        <input id="new-chat-partner" placeholder="Логин собеседника" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
+      </div>
+
+      <div id="group-fields" style="display:none;">
+        <input id="new-group-name" placeholder="Название группы" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input id="new-group-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
+          <button id="add-group-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
+        </div>
+        <div id="group-members-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+      </div>
+
+      <div id="add-chat-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-top:6px;margin-bottom:8px;"></div>
       <div style="display:flex;gap:8px;">
         <button id="cancel-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;">Отмена</button>
         <button id="create-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Создать</button>
@@ -163,8 +181,27 @@
         <button id="notif-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;">🔔 Включить уведомления</button>
       </div>
 
-      <button id="logout-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:#f76e6e;cursor:pointer;font-size:13px;margin-bottom:10px;">Выйти из аккаунта</button>
+      <div class="settings-section">
+        <div class="settings-section-title">Аккаунт</div>
+        <button id="change-password-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;margin-bottom:8px;">🔑 Изменить пароль</button>
+        <button id="logout-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:#f76e6e;cursor:pointer;font-size:13px;">Выйти из аккаунта</button>
+      </div>
+
       <button id="close-settings" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
+    </div>
+  </div>
+
+  <div id="password-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:11;align-items:center;justify-content:center;">
+    <div style="background:var(--panel);border-radius:14px;padding:20px;width:280px;max-width:90vw;">
+      <h2 style="margin:0 0 14px;font-size:16px;">Изменить пароль</h2>
+      <input id="old-password-input" type="password" placeholder="Текущий пароль" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;" />
+      <input id="new-password-input" type="password" placeholder="Новый пароль (минимум 6 символов)" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:10px;" />
+      <div id="password-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:8px;"></div>
+      <div id="password-success" style="color:#2ec27e;font-size:12px;min-height:14px;margin-bottom:8px;"></div>
+      <div style="display:flex;gap:8px;">
+        <button id="cancel-password-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;">Отмена</button>
+        <button id="save-password-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Сохранить</button>
+      </div>
     </div>
   </div>
   <div id="main">
@@ -202,81 +239,109 @@ const auth = firebase.auth();
 // id браузера — так можно писать по-настоящему лично, только вдвоём
 let myClientId = null;
 
-// Демо-данные по умолчанию (имена, аватарки и стартовое сообщение —
-// стартовое сообщение один раз копируется в общую базу при первом заходе)
-const defaultChats = [
-  { id: 4, name: "Амаль", avatar: "data:image/jpeg;base64,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", messages: [
-    { from: "in", text: "Я амаль я сожгу свой виш и ф3 пм", time: "21:14" },
-  ]},
-  { id: 5, name: "Нурис", avatar: "data:image/jpeg;base64,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", messages: [
-    { from: "in", text: "Я нурис и я до конца сожгу свой фикс", time: "21:15" },
-  ]},
-  { id: 6, name: "Нура", avatar: "data:image/jpeg;base64,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", messages: [
-    { from: "in", text: "мне пофиг на бабки", time: "21:16" },
-  ]},
-];
+// (было: демо-данные с друзьями Амаль/Нурис/Нура — убраны, теперь чаты
+// создаются только вручную, через настоящих зарегистрированных пользователей)
 
-// Чаты синхронизируются через Firebase: список чатов общий для всех,
-// у кого открыто приложение — если кто-то добавит чат, он появится у всех.
-// Приватные чаты (по коду) в этот общий список НЕ попадают — каждый
-// добавляет их себе сам, введя тот же секретный код.
+// Настоящая система участников (как в Телеграме): у каждого чата (личного
+// или группового) есть список участников (members), и увидеть чат может
+// только тот, кто в этом списке. userChats/{uid} — это персональный "индекс":
+// какие именно чаты видит конкретный пользователь.
 let chats = [];
-const chatListRef = db.ref('chatList');
 const messageListenersStarted = {};
-let lastPublicList = [];
+const chatMetaListenersStarted = {};
+let pendingOpenId = null;
 
-// Личные чаты с конкретным человеком — список тех, с кем я уже открывал
-// переписку, хранится в этом браузере. Сам чат виден только двум участникам,
-// потому что его id всегда собирается из id именно этих двух аккаунтов.
-const PRIVATE_KEY = 'slchat_private_chats';
-let privateChatsLocal = [];
-try { privateChatsLocal = JSON.parse(localStorage.getItem(PRIVATE_KEY) || '[]'); } catch(e) {}
-function savePrivateChats(){
-  try { localStorage.setItem(PRIVATE_KEY, JSON.stringify(privateChatsLocal)); } catch(e) {}
-}
+// Живой кэш всех зарегистрированных пользователей (логин + аватар),
+// нужен, чтобы в личных чатах показывать актуальное имя и фото собеседника
+let usersCache = {};
 
 function privateChatId(uidA, uidB){
   return 'dm_' + [uidA, uidB].sort().join('_');
 }
 
+function otherMemberUid(meta){
+  if(!meta || !meta.members) return null;
+  return Object.keys(meta.members).find(uid => uid !== myClientId) || null;
+}
+
+function chatDisplayName(meta){
+  if(!meta) return '';
+  if(meta.type === 'group') return meta.name || 'Группа';
+  const otherUid = otherMemberUid(meta);
+  const u = otherUid && usersCache[otherUid];
+  return (u && u.username) || 'Пользователь';
+}
+
+function chatDisplayAvatar(meta){
+  if(!meta) return null;
+  if(meta.type === 'group') return meta.avatar || null;
+  const otherUid = otherMemberUid(meta);
+  const u = otherUid && usersCache[otherUid];
+  return (u && u.avatar) || null;
+}
+
+function refreshChatDisplay(chat){
+  if(!chat.meta) return;
+  chat.name = chatDisplayName(chat.meta);
+  chat.avatar = chatDisplayAvatar(chat.meta);
+}
+
+function refreshAllChatDisplays(){
+  chats.forEach(refreshChatDisplay);
+  renderChatList();
+  if(activeChatId){
+    const chat = chats.find(c => c.id === activeChatId);
+    if(chat) updateChatHeader(chat);
+  }
+}
+
 let hasAutoOpened = false;
-function rebuildChats(){
-  const merged = lastPublicList.concat(privateChatsLocal);
-  merged.forEach(item => {
-    const existing = chats.find(c => c.id === item.id);
-    item.messages = existing ? existing.messages : [];
-    item.seedText = (defaultChats.find(d => d.id === item.id) || {}).messages?.[0];
-  });
-  chats = merged;
-  chats.forEach(chat => {
-    if(!messageListenersStarted[chat.id]){
-      messageListenersStarted[chat.id] = true;
-      listenToChat(chat);
+function syncChatMembership(ids){
+  const idSet = new Set(ids);
+  chats = chats.filter(c => idSet.has(c.id));
+  ids.forEach(id => {
+    if(!chatMetaListenersStarted[id]){
+      chatMetaListenersStarted[id] = true;
+      db.ref('chats/' + id + '/meta').on('value', snap => {
+        const meta = snap.val();
+        if(!meta) return;
+        let chat = chats.find(c => c.id === id);
+        if(!chat){
+          chat = { id, messages: [] };
+          chats.push(chat);
+        }
+        chat.meta = meta;
+        refreshChatDisplay(chat);
+        if(!messageListenersStarted[id]){
+          messageListenersStarted[id] = true;
+          listenToChat(chat);
+        }
+        renderChatList();
+        if(activeChatId === id) updateChatHeader(chat);
+        if(pendingOpenId === id){
+          pendingOpenId = null;
+          openChat(id);
+        }
+        if(!hasAutoOpened && chats.length > 0 && window.innerWidth > 700){
+          hasAutoOpened = true;
+          openChat(chats.find(c => c.meta)?.id || chats[0].id);
+        }
+      });
     }
   });
   renderChatList();
-  if(!hasAutoOpened && chats.length > 0 && window.innerWidth > 700){
-    hasAutoOpened = true;
-    openChat(chats[0].id);
-  }
 }
 
 // Запускается только после успешного входа в аккаунт
 function startApp(){
-  chatListRef.once('value', snap => {
-    if(!snap.exists()){
-      // Если список чатов в базе ещё пуст — кладём туда стартовых друзей один раз
-      defaultChats.forEach(c => {
-        chatListRef.child(c.id).set({ id: c.id, name: c.name, avatar: c.avatar || null, createdAt: Date.now() });
-      });
-    }
+  db.ref('users').on('value', snap => {
+    usersCache = snap.val() || {};
+    refreshAllChatDisplays();
   });
-  chatListRef.on('value', snap => {
-    const list = [];
-    snap.forEach(child => { list.push(child.val()); });
-    list.sort((a,b) => (a.createdAt||0) - (b.createdAt||0));
-    lastPublicList = list;
-    rebuildChats();
+  db.ref('userChats/' + myClientId).on('value', snap => {
+    const ids = [];
+    snap.forEach(child => { if(child.val()) ids.push(child.key); });
+    syncChatMembership(ids);
   });
 }
 
@@ -289,13 +354,43 @@ function startPrivateChat(username, onError){
     const theirUid = snap.val();
     if(theirUid === myClientId){ onError('Это твой собственный логин'); return; }
     const id = privateChatId(myClientId, theirUid);
-    if(!privateChatsLocal.find(c => c.id === id)){
-      privateChatsLocal.push({ id, name: username, createdAt: Date.now() });
-      savePrivateChats();
-    }
-    rebuildChats();
+    pendingOpenId = id;
+    db.ref('chats/' + id + '/meta').once('value').then(metaSnap => {
+      const finish = () => {
+        db.ref('userChats/' + myClientId + '/' + id).set(true);
+        db.ref('userChats/' + theirUid + '/' + id).set(true);
+        document.getElementById('add-chat-modal').style.display = 'none';
+      };
+      if(!metaSnap.exists()){
+        const members = {}; members[myClientId] = true; members[theirUid] = true;
+        db.ref('chats/' + id + '/meta').set({
+          id, name: null, type: 'dm', members,
+          createdBy: myClientId, createdAt: Date.now()
+        }).then(finish);
+      } else {
+        finish();
+      }
+    });
+  });
+}
+
+// Создать групповой чат с несколькими выбранными людьми
+function createGroupChat(name, memberList, onError){
+  if(!name){ onError('Введи название группы'); return; }
+  if(memberList.length === 0){ onError('Добавь хотя бы одного участника'); return; }
+  const newRef = db.ref('chats').push();
+  const id = newRef.key;
+  const members = {}; members[myClientId] = true;
+  memberList.forEach(m => { members[m.uid] = true; });
+  pendingOpenId = id;
+  db.ref('chats/' + id + '/meta').set({
+    id, name, type: 'group', members, avatar: null,
+    createdBy: myClientId, createdAt: Date.now()
+  }).then(() => {
+    const writes = Object.keys(members).map(uid => db.ref('userChats/' + uid + '/' + id).set(true));
+    return Promise.all(writes);
+  }).then(() => {
     document.getElementById('add-chat-modal').style.display = 'none';
-    openChat(id);
   });
 }
 
@@ -330,12 +425,6 @@ function updateNotifBtn(){
 function listenToChat(chat){
   const ref = db.ref('chats/' + chat.id + '/messages');
   let firstLoad = true;
-  ref.once('value', snap => {
-    if(!snap.exists() && chat.seedText){
-      // Если в базе ещё нет сообщений — кладём туда стартовое сообщение один раз
-      ref.push({ text: chat.seedText.text, time: chat.seedText.time, clientId: 'seed', ts: Date.now() });
-    }
-  });
   ref.on('value', snap => {
     const msgs = [];
     snap.forEach(child => { msgs.push(child.val()); });
@@ -438,18 +527,23 @@ function renderChatList(){
   });
 }
 
+function updateChatHeader(chat){
+  document.getElementById('chat-header-name').textContent = chat.name;
+  const headerAvatar = document.getElementById('chat-header-avatar');
+  if(chat.avatar){ headerAvatar.src = chat.avatar; headerAvatar.style.display = 'inline-block'; }
+  else { headerAvatar.style.display = 'none'; }
+}
+
 function openChat(id){
   activeChatId = id;
   const chat = chats.find(c => c.id === id);
+  if(!chat) return;
   // Отмечаем чат прочитанным
   const lastMsg = chat.messages[chat.messages.length - 1];
   lastSeen[id] = lastMsg ? (lastMsg.ts || Date.now()) : Date.now();
   saveLastSeen();
   renderChatList();
-  document.getElementById('chat-header-name').textContent = chat.name;
-  const headerAvatar = document.getElementById('chat-header-avatar');
-  if(chat.avatar){ headerAvatar.src = chat.avatar; headerAvatar.style.display = 'inline-block'; }
-  else { headerAvatar.style.display = 'none'; }
+  updateChatHeader(chat);
   document.getElementById('app').classList.add('chat-open');
   renderMessages();
 }
@@ -467,7 +561,8 @@ function renderMessages(){
     const isMine = m.clientId === myClientId;
     const div = document.createElement('div');
     div.className = 'bubble ' + (isMine ? 'out' : 'in');
-    const senderLabel = (!isMine && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}</div>` : '';
+    const isGroup = chat.meta && chat.meta.type === 'group';
+    const senderLabel = (!isMine && isGroup && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}</div>` : '';
     div.innerHTML = `${senderLabel}${m.text}<time>${m.time}</time>`;
     box.appendChild(div);
   });
@@ -521,6 +616,38 @@ document.getElementById('notif-btn').onclick = () => {
 document.getElementById('logout-btn').onclick = () => {
   auth.signOut();
 };
+
+// Смена пароля — с повторным подтверждением текущего пароля (так требует Firebase)
+document.getElementById('change-password-btn').onclick = () => {
+  document.getElementById('old-password-input').value = '';
+  document.getElementById('new-password-input').value = '';
+  document.getElementById('password-error').textContent = '';
+  document.getElementById('password-success').textContent = '';
+  document.getElementById('password-modal').style.display = 'flex';
+};
+document.getElementById('cancel-password-btn').onclick = () => {
+  document.getElementById('password-modal').style.display = 'none';
+};
+document.getElementById('save-password-btn').onclick = () => {
+  const oldPass = document.getElementById('old-password-input').value;
+  const newPass = document.getElementById('new-password-input').value;
+  const errorEl = document.getElementById('password-error');
+  const successEl = document.getElementById('password-success');
+  errorEl.textContent = ''; successEl.textContent = '';
+  if(!oldPass || !newPass){ errorEl.textContent = 'Заполни оба поля'; return; }
+  if(newPass.length < 6){ errorEl.textContent = 'Новый пароль минимум 6 символов'; return; }
+  const user = auth.currentUser;
+  const credential = firebase.auth.EmailAuthProvider.credential(user.email, oldPass);
+  user.reauthenticateWithCredential(credential).then(() => {
+    return user.updatePassword(newPass);
+  }).then(() => {
+    successEl.textContent = 'Пароль изменён';
+    document.getElementById('old-password-input').value = '';
+    document.getElementById('new-password-input').value = '';
+  }).catch(err => {
+    errorEl.textContent = authErrorText(err);
+  });
+};
 document.querySelectorAll('.theme-opt').forEach(btn => {
   btn.onclick = () => { settings.theme = btn.dataset.theme; applySettings(); saveSettings(); };
 });
@@ -558,43 +685,86 @@ document.getElementById('profile-avatar-input').addEventListener('change', e => 
   reader.readAsDataURL(file);
 });
 
-// Создание нового чата
-document.getElementById('add-chat-btn').onclick = () => {
-  document.getElementById('new-chat-name').value = '';
-  document.getElementById('new-chat-partner').value = '';
-  document.getElementById('new-chat-private').checked = false;
-  document.getElementById('new-chat-partner').style.display = 'none';
-  document.getElementById('new-chat-name').style.display = 'block';
+// Создание нового чата — личный (1 на 1) или группа с несколькими людьми
+let addChatMode = 'dm';
+let groupMembers = []; // { uid, username }
+
+function setAddChatMode(mode){
+  addChatMode = mode;
+  document.getElementById('mode-dm-btn').classList.toggle('selected', mode === 'dm');
+  document.getElementById('mode-group-btn').classList.toggle('selected', mode === 'group');
+  document.getElementById('dm-fields').style.display = mode === 'dm' ? 'block' : 'none';
+  document.getElementById('group-fields').style.display = mode === 'group' ? 'block' : 'none';
   document.getElementById('add-chat-error').textContent = '';
+}
+document.getElementById('mode-dm-btn').onclick = () => setAddChatMode('dm');
+document.getElementById('mode-group-btn').onclick = () => setAddChatMode('group');
+
+function renderGroupMembers(){
+  const box = document.getElementById('group-members-list');
+  box.innerHTML = '';
+  groupMembers.forEach((m, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'member-chip';
+    chip.innerHTML = `${m.username} <button data-i="${i}">✕</button>`;
+    chip.querySelector('button').onclick = () => {
+      groupMembers.splice(i, 1);
+      renderGroupMembers();
+    };
+    box.appendChild(chip);
+  });
+}
+
+document.getElementById('add-chat-btn').onclick = () => {
+  document.getElementById('new-chat-partner').value = '';
+  document.getElementById('new-group-name').value = '';
+  document.getElementById('new-group-member-input').value = '';
+  groupMembers = [];
+  renderGroupMembers();
+  document.getElementById('add-chat-error').textContent = '';
+  setAddChatMode('dm');
   document.getElementById('add-chat-modal').style.display = 'flex';
 };
 document.getElementById('cancel-chat-btn').onclick = () => {
   document.getElementById('add-chat-modal').style.display = 'none';
 };
-document.getElementById('new-chat-private').addEventListener('change', e => {
-  const isPriv = e.target.checked;
-  document.getElementById('new-chat-partner').style.display = isPriv ? 'block' : 'none';
-  document.getElementById('new-chat-name').style.display = isPriv ? 'none' : 'block';
+
+function addGroupMember(){
+  const input = document.getElementById('new-group-member-input');
+  const errorEl = document.getElementById('add-chat-error');
+  const uname = input.value.trim().toLowerCase();
+  errorEl.textContent = '';
+  if(!uname) return;
+  db.ref('usernames/' + uname).once('value').then(snap => {
+    if(!snap.exists()){ errorEl.textContent = 'Пользователь с таким логином не найден'; return; }
+    const uid = snap.val();
+    if(uid === myClientId){ errorEl.textContent = 'Это твой собственный логин'; return; }
+    if(groupMembers.find(m => m.uid === uid)){ errorEl.textContent = 'Этот человек уже добавлен'; return; }
+    groupMembers.push({ uid, username: uname });
+    renderGroupMembers();
+    input.value = '';
+  });
+}
+document.getElementById('add-group-member-btn').onclick = addGroupMember;
+document.getElementById('new-group-member-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); addGroupMember(); }
 });
+
 document.getElementById('create-chat-btn').onclick = () => {
-  const isPrivate = document.getElementById('new-chat-private').checked;
   const errorEl = document.getElementById('add-chat-error');
   errorEl.textContent = '';
-  if(isPrivate){
+  if(addChatMode === 'dm'){
     const partner = document.getElementById('new-chat-partner').value.trim();
     startPrivateChat(partner, msg => { errorEl.textContent = msg; });
   } else {
-    const name = document.getElementById('new-chat-name').value.trim();
-    if(!name) return;
-    const newRef = chatListRef.push();
-    newRef.set({ id: newRef.key, name, avatar: null, createdAt: Date.now() });
-    document.getElementById('add-chat-modal').style.display = 'none';
+    const name = document.getElementById('new-group-name').value.trim();
+    createGroupChat(name, groupMembers, msg => { errorEl.textContent = msg; });
   }
 };
-document.getElementById('new-chat-name').addEventListener('keydown', e => {
+document.getElementById('new-chat-partner').addEventListener('keydown', e => {
   if(e.key === 'Enter') document.getElementById('create-chat-btn').click();
 });
-document.getElementById('new-chat-partner').addEventListener('keydown', e => {
+document.getElementById('new-group-name').addEventListener('keydown', e => {
   if(e.key === 'Enter') document.getElementById('create-chat-btn').click();
 });
 
