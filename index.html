@@ -1022,17 +1022,29 @@ function attachPeerCommon(pc){
       });
     }
   };
+  let alreadyConnected = false;
+  const markConnected = () => {
+    if(alreadyConnected) return;
+    alreadyConnected = true;
+    setCallStatus('Соединено');
+    startCallTimer();
+    stopRingtone();
+  };
+  const markTrouble = (state) => {
+    if(state === 'failed' || state === 'disconnected') setCallStatus('Связь потеряна');
+    else if(!alreadyConnected && (state === 'connecting' || state === 'checking')) setCallStatus('Соединяемся...');
+  };
+  // Проверяем сразу двумя способами — в некоторых браузерах (особенно
+  // на телефонах) надёжно работает только один из них
   pc.onconnectionstatechange = () => {
     if(!peerConn || pc !== peerConn) return;
-    if(pc.connectionState === 'connected'){
-      setCallStatus('Соединено');
-      startCallTimer();
-      stopRingtone();
-    } else if(pc.connectionState === 'failed' || pc.connectionState === 'disconnected'){
-      setCallStatus('Связь потеряна');
-    } else if(pc.connectionState === 'connecting'){
-      setCallStatus('Соединяемся...');
-    }
+    if(pc.connectionState === 'connected') markConnected();
+    else markTrouble(pc.connectionState);
+  };
+  pc.oniceconnectionstatechange = () => {
+    if(!peerConn || pc !== peerConn) return;
+    if(pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') markConnected();
+    else markTrouble(pc.iceConnectionState);
   };
 }
 let callTimerInterval = null;
