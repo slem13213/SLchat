@@ -20,10 +20,13 @@
   *{box-sizing:border-box}
   html,body{height:100%;margin:0;font-family:-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--text);}
   #app{display:flex;height:100%;max-width:900px;margin:0 auto;overflow:hidden;}
-  #sidebar{width:280px;min-width:220px;background:var(--panel);border-right:1px solid #0a0f15;display:flex;flex-direction:column;}
-  #sidebar h1{font-size:18px;padding:16px;margin:0;border-bottom:1px solid #0a0f15;}
-  .chat-item{display:flex;gap:10px;padding:12px 14px;cursor:pointer;align-items:center;}
+  #sidebar{width:280px;min-width:220px;background:var(--panel);border-right:1px solid #0a0f15;display:flex;flex-direction:column;min-height:0;}
+  #sidebar h1{font-size:18px;padding:16px;margin:0;border-bottom:1px solid #0a0f15;flex-shrink:0;}
+  #chat-list{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .chat-item{display:flex;gap:10px;padding:12px 14px;cursor:pointer;align-items:center;position:relative;-webkit-user-select:none;user-select:none;}
   .chat-item:hover,.chat-item.active{background:var(--panel2);}
+  .chat-item.pinned{background:rgba(255,255,255,0.03);}
+  .chat-pin-icon{position:absolute;top:6px;right:8px;font-size:11px;opacity:0.7;}
   .avatar{width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;flex-shrink:0;}
   .chat-meta{overflow:hidden;}
   .chat-name{font-weight:600;font-size:14px;}
@@ -165,6 +168,13 @@
   #credit .dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0;}
   .unread-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;min-width:18px;height:18px;border-radius:9px;display:flex;align-items:center;justify-content:center;padding:0 5px;margin-left:auto;flex-shrink:0;}
   .chat-item{position:relative;}
+  #chat-context-menu{position:fixed;background:var(--panel2);border-radius:12px;box-shadow:0 4px 18px rgba(0,0,0,0.4);z-index:9998;overflow:hidden;min-width:180px;display:none;}
+  #chat-context-menu.open{display:block;}
+  #chat-context-overlay{position:fixed;inset:0;z-index:9997;display:none;}
+  #chat-context-overlay.open{display:block;}
+  .ctx-item{padding:13px 16px;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:10px;}
+  .ctx-item:hover{background:var(--panel);}
+  .ctx-item.danger{color:#ff5c5c;}
   #auth-screen{position:fixed;inset:0;background:var(--bg);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;}
   #auth-box{width:300px;max-width:100%;background:var(--panel);border-radius:16px;padding:28px 24px;}
   #auth-box h1{font-size:22px;margin:0 0 4px;text-align:center;}
@@ -202,6 +212,12 @@
     <input id="story-file-input" type="file" accept="image/*" style="display:none;" />
     <input id="search-input" placeholder="Поиск..." style="margin:0 12px 10px;padding:8px 12px;border-radius:14px;border:none;background:var(--panel2);color:var(--text);font-size:13px;outline:none;" />
     <div id="chat-list"></div>
+  </div>
+
+  <div id="chat-context-overlay"></div>
+  <div id="chat-context-menu">
+    <div class="ctx-item" id="ctx-pin-item">📌 <span id="ctx-pin-label">Закрепить</span></div>
+    <div class="ctx-item danger" id="ctx-delete-item">🗑 Удалить чат</div>
   </div>
 
   <div id="add-chat-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10;align-items:center;justify-content:center;">
@@ -512,37 +528,21 @@ async function setupPushNotifications(){
   } catch(e) { /* пуш недоступен — обычные уведомления всё равно работают */ }
 }
 
-// Временная диагностика: показывает маленькую подсказку внизу экрана,
-// чтобы было видно, что происходит с push-уведомлениями, без необходимости
-// подключать телефон к компьютеру. Можно будет убрать после того, как всё
-// заработает.
-function slchatDebugToast(msg){
-  try {
-    const toast = document.createElement('div');
-    toast.textContent = msg;
-    toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);color:#fff;padding:8px 14px;border-radius:10px;font-size:13px;z-index:99999;max-width:90vw;text-align:center;';
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 5000);
-  } catch(e) {}
-}
-
 let slchatNativePushWired = false;
 function setupNativePushNotifications(){
   if(!window.Capacitor.Plugins || !window.Capacitor.Plugins.PushNotifications){
-    slchatDebugToast('push: плагин PushNotifications не найден');
     return;
   }
   const PN = window.Capacitor.Plugins.PushNotifications;
   if(!slchatNativePushWired){
     slchatNativePushWired = true;
     PN.addListener('registration', token => {
-      slchatDebugToast('push: токен получен');
       if(token && token.value && myClientId){
         db.ref('users/' + myClientId + '/fcmTokens/' + token.value).set(true);
       }
     });
     PN.addListener('registrationError', (err) => {
-      slchatDebugToast('push: ошибка регистрации ' + JSON.stringify(err));
+      console.error('push registration error', err);
     });
     PN.addListener('pushNotificationActionPerformed', action => {
       const chatId = action && action.notification && action.notification.data && action.notification.data.chatId;
@@ -550,10 +550,9 @@ function setupNativePushNotifications(){
     });
   }
   PN.requestPermissions().then(res => {
-    slchatDebugToast('push: разрешение = ' + (res && res.receive));
     if(res && res.receive === 'granted') PN.register();
   }).catch((e) => {
-    slchatDebugToast('push: ошибка запроса разрешения ' + JSON.stringify(e));
+    console.error('push permission error', e);
   });
 }
 
@@ -615,6 +614,11 @@ let chats = [];
 const messageListenersStarted = {};
 const chatMetaListenersStarted = {};
 let pendingOpenId = null;
+
+// Закреплённые чаты (у каждого пользователя свой набор, хранится отдельно
+// от userChats, чтобы не задевать существующую логику видимости чатов)
+let pinnedChatIds = {};
+let contextMenuChatId = null;
 
 // Живой кэш всех зарегистрированных пользователей (логин + аватар),
 // нужен, чтобы в личных чатах показывать актуальное имя и фото собеседника
@@ -711,6 +715,10 @@ function startApp(){
     const ids = [];
     snap.forEach(child => { if(child.val()) ids.push(child.key); });
     syncChatMembership(ids);
+  });
+  db.ref('pinnedChats/' + myClientId).on('value', snap => {
+    pinnedChatIds = snap.val() || {};
+    renderChatList();
   });
   db.ref('stories').on('value', snap => {
     storiesCache = snap.val() || {};
@@ -1038,6 +1046,16 @@ function logRegistrationForAdmin(username){
       });
     });
   });
+  // Дублируем то же самое в Telegram — так админ узнает о регистрации,
+  // даже если сам не в приложении. Если функция ещё не настроена —
+  // просто тихо ничего не произойдёт (тихо игнорируем ошибку)
+  try {
+    fetch('/.netlify/functions/notify-telegram', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text: '🆕 Новая регистрация в SLchat: @' + username })
+    }).catch(() => {});
+  } catch(e) {}
 }
 
 // Начать личный чат с конкретным человеком по его логину
@@ -1243,10 +1261,21 @@ function renderChatList(){
   const list = document.getElementById('chat-list');
   list.innerHTML = '';
   const filtered = chats.filter(c => c.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  // Закреплённые чаты — наверх, дальше остальные по времени последнего
+  // сообщения (сначала новые), а совсем пустые (без сообщений) — в конец
+  filtered.sort((a, b) => {
+    const aPinned = !!pinnedChatIds[a.id];
+    const bPinned = !!pinnedChatIds[b.id];
+    if(aPinned !== bPinned) return aPinned ? -1 : 1;
+    const aTs = (a.messages[a.messages.length - 1] || {}).ts || 0;
+    const bTs = (b.messages[b.messages.length - 1] || {}).ts || 0;
+    return bTs - aTs;
+  });
   filtered.forEach(chat => {
     const last = chat.messages[chat.messages.length - 1];
     const div = document.createElement('div');
-    div.className = 'chat-item' + (chat.id === activeChatId ? ' active' : '');
+    const isPinned = !!pinnedChatIds[chat.id];
+    div.className = 'chat-item' + (chat.id === activeChatId ? ' active' : '') + (isPinned ? ' pinned' : '');
     const isGroup = chat.meta && chat.meta.type === 'group';
     const avatarHtml = chat.avatar
       ? `<img src="${chat.avatar}" class="avatar" style="object-fit:cover;" />`
@@ -1254,16 +1283,98 @@ function renderChatList(){
     const unread = unreadCount(chat);
     const badgeHtml = unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : '';
     const nameDevBadge = !isGroup ? devCheckHtml(chat.name) : '';
+    const pinIconHtml = isPinned ? '<div class="chat-pin-icon">📌</div>' : '';
     div.innerHTML = `
       ${avatarHtml}
       <div class="chat-meta">
         <div class="chat-name">${chat.name}${nameDevBadge}</div>
         <div class="chat-last">${last ? messagePreviewText(last) : ''}</div>
       </div>
-      ${badgeHtml}`;
+      ${badgeHtml}
+      ${pinIconHtml}`;
     div.onclick = () => openChat(chat.id);
+    wireChatItemLongPress(div, chat.id);
     list.appendChild(div);
   });
+}
+
+// Долгое нажатие (или зажатие) на чат в списке — открывает меню
+// "закрепить/открепить" и "удалить", как в Телеграме
+let chatLongPressTimer = null;
+let chatLongPressFired = false;
+function wireChatItemLongPress(div, chatId){
+  const start = (e) => {
+    chatLongPressFired = false;
+    clearTimeout(chatLongPressTimer);
+    chatLongPressTimer = setTimeout(() => {
+      chatLongPressFired = true;
+      const x = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      const y = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+      showChatContextMenu(chatId, x, y);
+    }, 480);
+  };
+  const cancel = () => clearTimeout(chatLongPressTimer);
+  div.addEventListener('mousedown', start);
+  div.addEventListener('mouseup', cancel);
+  div.addEventListener('mouseleave', cancel);
+  div.addEventListener('touchstart', start, { passive: true });
+  div.addEventListener('touchend', cancel);
+  div.addEventListener('touchmove', cancel);
+  div.addEventListener('click', (e) => {
+    if(chatLongPressFired){ e.preventDefault(); e.stopPropagation(); chatLongPressFired = false; }
+  });
+  div.addEventListener('contextmenu', (e) => {
+    // На компьютере правый клик — тоже открывает то же меню
+    e.preventDefault();
+    showChatContextMenu(chatId, e.clientX, e.clientY);
+  });
+}
+
+function showChatContextMenu(chatId, x, y){
+  contextMenuChatId = chatId;
+  const menu = document.getElementById('chat-context-menu');
+  const overlay = document.getElementById('chat-context-overlay');
+  const isPinned = !!pinnedChatIds[chatId];
+  document.getElementById('ctx-pin-label').textContent = isPinned ? 'Открепить' : 'Закрепить';
+  menu.classList.add('open');
+  overlay.classList.add('open');
+  // Ставим меню так, чтобы оно не вылезало за край экрана
+  const menuWidth = 200, menuHeight = 100;
+  const left = Math.min(x, window.innerWidth - menuWidth - 10);
+  const top = Math.min(y, window.innerHeight - menuHeight - 10);
+  menu.style.left = Math.max(10, left) + 'px';
+  menu.style.top = Math.max(10, top) + 'px';
+}
+
+function closeChatContextMenu(){
+  document.getElementById('chat-context-menu').classList.remove('open');
+  document.getElementById('chat-context-overlay').classList.remove('open');
+  contextMenuChatId = null;
+}
+
+function toggleChatPin(){
+  if(!contextMenuChatId) return;
+  const chatId = contextMenuChatId;
+  const isPinned = !!pinnedChatIds[chatId];
+  db.ref('pinnedChats/' + myClientId + '/' + chatId).set(!isPinned ? true : null);
+  closeChatContextMenu();
+}
+
+function confirmDeleteChat(){
+  if(!contextMenuChatId) return;
+  const chatId = contextMenuChatId;
+  closeChatContextMenu();
+  const chat = chats.find(c => c.id === chatId);
+  const name = chat ? chat.name : 'этот чат';
+  if(!confirm('Удалить чат «' + name + '» из списка? Переписка у собеседника не удалится.')) return;
+  // "Удаление" — это удаление только своего личного индекса чата (как и в
+  // Телеграме — у другого участника чат никуда не пропадёт)
+  db.ref('userChats/' + myClientId + '/' + chatId).remove();
+  db.ref('pinnedChats/' + myClientId + '/' + chatId).remove();
+  if(activeChatId === chatId){
+    activeChatId = null;
+    closeChat();
+  }
 }
 
 function updateChatHeader(chat){
@@ -1715,6 +1826,10 @@ document.getElementById('search-input').addEventListener('input', e => {
   searchQuery = e.target.value;
   renderChatList();
 });
+
+document.getElementById('ctx-pin-item').addEventListener('click', toggleChatPin);
+document.getElementById('ctx-delete-item').addEventListener('click', confirmDeleteChat);
+document.getElementById('chat-context-overlay').addEventListener('click', closeChatContextMenu);
 
 // ===== Истории (сторис) — фото живёт 24 часа, потом само пропадает из ленты =====
 let storiesCache = {};
