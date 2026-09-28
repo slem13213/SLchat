@@ -76,6 +76,25 @@
   .chat-mode-btn.selected{background:var(--accent);color:#fff;}
   .member-chip{display:flex;align-items:center;gap:5px;background:var(--panel2);color:var(--text);border-radius:20px;padding:4px 8px 4px 10px;font-size:12px;}
   .member-chip button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:0;line-height:1;}
+  .friend-chip{display:flex;align-items:center;gap:5px;background:var(--panel2);color:var(--text);border-radius:20px;padding:4px 10px;font-size:12px;cursor:pointer;border:none;}
+  .friend-chip:active{opacity:0.8;}
+  .friend-row{display:flex;align-items:center;gap:10px;}
+  .friend-row .avatar{width:34px;height:34px;font-size:13px;flex-shrink:0;}
+  .friend-row-name{flex:1;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .friend-row-btn{background:var(--panel2);border:none;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer;color:var(--text);}
+  .friend-row-btn.accept{background:var(--accent);color:#fff;}
+  .friend-row-btn.decline,.friend-row-btn.remove{color:#f76e6e;}
+  .bubble img.msg-photo{max-width:220px;max-height:280px;border-radius:10px;display:block;margin-top:2px;cursor:pointer;}
+  #photo-viewer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:20;align-items:center;justify-content:center;}
+  #photo-viewer-overlay img{max-width:92vw;max-height:88vh;border-radius:8px;}
+  #photo-viewer-overlay .close-photo-viewer{position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:26px;cursor:pointer;}
+  #group-call-tiles{display:none;flex-wrap:wrap;gap:8px;justify-content:center;max-height:55vh;overflow-y:auto;margin-bottom:10px;}
+  .call-box.group-call-mode #group-call-tiles{display:flex;}
+  .call-box.group-call-mode .call-avatar,.call-box.group-call-mode #remote-video,.call-box.group-call-mode #local-video{display:none;}
+  .gc-tile{width:96px;position:relative;background:#000;border-radius:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;aspect-ratio:1/1;}
+  .gc-tile video,.gc-tile audio{width:100%;height:100%;object-fit:cover;}
+  .gc-tile .gc-avatar{width:42px;height:42px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:15px;}
+  .gc-tile .gc-name{position:absolute;bottom:2px;left:0;right:0;text-align:center;font-size:10px;color:#fff;background:rgba(0,0,0,0.45);padding:1px 0;}
   .settings-section-title{font-size:12px;text-transform:uppercase;letter-spacing:0.5px;color:var(--muted);margin-bottom:8px;font-weight:600;}
   .settings-section{margin-bottom:18px;}
   .dev-check{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;background:#4ea3f7;color:#fff;border-radius:50%;font-size:9px;vertical-align:middle;margin-left:3px;flex-shrink:0;}
@@ -137,6 +156,7 @@
     <div style="display:flex;align-items:center;justify-content:space-between;padding-right:12px;">
       <img src="data:image/png;base64,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" alt="SLchat" style="display:block;height:30px;">
       <div style="display:flex;gap:4px;">
+        <button id="friends-btn" title="Друзья" style="position:relative;background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:6px;">👤<span id="friends-req-badge" class="unread-badge" style="display:none;position:absolute;top:2px;right:2px;">0</span></button>
         <button id="add-chat-btn" title="Новый чат" style="background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:6px;">➕</button>
         <button id="settings-btn" title="Настройки" style="background:none;border:none;color:var(--text);font-size:18px;cursor:pointer;padding:6px;">⚙️</button>
       </div>
@@ -157,6 +177,7 @@
 
       <div id="dm-fields">
         <input id="new-chat-partner" placeholder="Логин собеседника" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
+        <div id="dm-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
       </div>
 
       <div id="group-fields" style="display:none;">
@@ -165,7 +186,8 @@
           <input id="new-group-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
           <button id="add-group-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
         </div>
-        <div id="group-members-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+        <div id="group-members-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+        <div id="group-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
       </div>
 
       <div id="add-chat-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-top:6px;margin-bottom:8px;"></div>
@@ -173,6 +195,24 @@
         <button id="cancel-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;">Отмена</button>
         <button id="create-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Создать</button>
       </div>
+    </div>
+  </div>
+
+  <div id="friends-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10;align-items:center;justify-content:center;">
+    <div style="background:var(--panel);border-radius:14px;padding:20px;width:300px;max-width:90vw;max-height:80vh;overflow-y:auto;">
+      <h2 style="margin:0 0 14px;font-size:16px;">Друзья</h2>
+      <div style="display:flex;gap:6px;margin-bottom:8px;">
+        <input id="add-friend-input" placeholder="Логин пользователя" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
+        <button id="add-friend-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">+</button>
+      </div>
+      <div id="friends-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:6px;"></div>
+      <div id="friend-requests-section" style="display:none;">
+        <div class="settings-section-title">Заявки в друзья</div>
+        <div id="friend-requests-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+      </div>
+      <div class="settings-section-title">Мои друзья</div>
+      <div id="friends-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px;"></div>
+      <button id="close-friends-btn" style="width:100%;margin-top:10px;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
     </div>
   </div>
 
@@ -263,6 +303,7 @@
         <input id="group-add-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
         <button id="group-add-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
       </div>
+      <div id="group-info-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
       <div id="group-info-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:10px;"></div>
       <button id="close-group-info-btn" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
     </div>
@@ -281,6 +322,8 @@
     </div>
     <div id="messages"></div>
     <div id="input-row">
+      <button id="attach-photo-btn" title="Отправить фото" style="background:none;border:none;color:var(--accent);font-size:19px;cursor:pointer;padding:6px;flex-shrink:0;">📎</button>
+      <input id="chat-photo-input" type="file" accept="image/*" style="display:none;" />
       <input id="msg-input" placeholder="Написать сообщение..." />
       <button id="send-btn">➤</button>
     </div>
@@ -306,6 +349,7 @@
   <div class="call-box" id="active-call-box">
     <video id="remote-video" autoplay playsinline></video>
     <video id="local-video" autoplay playsinline muted></video>
+    <div id="group-call-tiles"></div>
     <div id="active-call-avatar" class="call-avatar">?</div>
     <div id="active-call-name" style="font-size:16px;font-weight:600;margin-bottom:4px;">Кто-то</div>
     <div id="active-call-status" class="call-status">Звоним...</div>
@@ -319,6 +363,12 @@
 </div>
 <audio id="remote-audio" autoplay playsinline></audio>
 <audio id="ringtone-audio" loop src="data:audio/mp3;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjYwLjE2LjEwMAAAAAAAAAAAAAAA//NwwAAAAAAAAAAAAEluZm8AAAAPAAAASQAALWcABwoODhEVGBgcHyMjJikpLTA0NDc7Pj5CRUVJTE9PU1ZaWl1hZGRoa2tvcnV1eXyAgIOHh4qOkZGVmJubn6KipqmtrbC0t7e6vsHBxcjIzM/T09ba3d3g5OTn6+7u8vX5+fz/AAAAAExhdmM2MC4zMQAAAAAAAAAAAAAAACQCqwAAAAAAAC1ncOdCnAAAAAAAAAAAAAAAAAD/82DEAB+RBgwBXHgBR7MAgkwiFTCYNRjMCCAx0RjGANNHs86dLDawmNSz09H2z8vHPCyk1+TTAxIMtEYyePzIpJMijkxSGzCINMEgUwGASyZbcAeAQAVAagTQegegnBcCFk7NM00PQ9D0PUagVisVisZHjx4/fv379+/fx4lAAAAAMPDw8PAAAAAFVYCBAAcYAVRAAGGAPgfpZIz/82LEECB4sigDn3gAAqAhTBUQaUxDcs3MBZBjjIlhoowr4AMMUGevDFgw6YwHsA9Mz+EGjCOAEIyQQU5MHYA3gPwcJJQfwsBcz9WdvEOfLlszn73B12WNEoNYseIwSvU3YOF2HetlxsxX2TLCVnoR/bu/6Lv7tb/9Pt79V28ogG1/3/3///z9QEkshkpIQhRkJIf+anfhBlQDBTtR//NixB4ScEqFH9sQAmqgy5Te1GptlPT/Emgx84zkkISz3V/3N71P/7aEp0+y6uvMUjVk+m51S7uyDQuOrswtswFOkyIzULheKgkHALRgTgAgc68X+HFTLsphuIGCYGMAdHVMmqGGTEgECkI7dJv+87v9d5rf38WJuARAxP2BMVipkbGNP3Du6V2qaI6ldGyLsVCtTtSxTeyhYIXvI//zYsRkHbiWFCrv9ERzqg07ubXY3fY0QYtWSSugkiNVBYkKT+//1uOBQmGO7MKABfaIhgF4AWaPGMFmb8nCRgqgDQYCCALnIAOGigwx35YHnu0RleU27Vf9yS/22HERiPqn9DLeLdCVLPN7cp+r9pAvbs6f7O/e/93GZmDJOmXGXmA4OgoADABwBMwHIBYObgOojY9JGkwncE/MCKD/82DEfRW4Vix85/BEGg+bzcYM00smho0+cx/WP8//13f2rrqPuign3num9CviqGNRDKO38d+yvWp7LcGEmok+s5/Yva+lKvQ6Kd++1vCu0gwmHQzv54wSBYeCMRAFRgM4D+dfukZmoJ24Bg/QMsYDeBGmshGXRmOIAYIX7ZpP/l3Hn773mGWdmpcmqrxARYLHm0Mep3vXu3D3D1P/82LEtRkwlhQA7/JEsotQTidouoklHLT25/sV3PqfrXQtEjpZkwmYstYnF2tqqkxBTUWqLEv//PCGzAIQBUwN4MnMARAAQ4AhBgBeYBsA6HMhIqRkA1QiYGKC5mARAPhk8mE0YY5dtLhz6K7ZF5m5RnuZkh/MzM83y7WpX2a/KbafUUysnf8pNzv9j4UQP5yioVirB8G1pCNRKHI5//NixOAccJYQAO/0RMx6GB8aXkb3PS4Pj0Ie2NedSprknUiqWrYthVcs0/GrXUxB/eFPDhgHwCWYLeJWBACYYBeAGGAOgLhgFIFufAG3VmVlfGRgcoRkYAgBjjuAKrzBEgcEJhatMXUeZSvK13Ew6CJr7Ev7dSGEWZXMhmlqry6WGGIr+2iJ3VlyUUuq6dkVhRNMYnZ0+qv5ptldHf/zYsT5Imm2FDL+RoTOjNMs1F49Zx784aau0YNCI9ryiZ1znsRcaqW5SQq8mkxBTQw/W7EWMAxAnDBThA8SANjAJgBMwCYBPJQIo8KBoWNYj0MTCEgdMwGECiMxLCp4VCqTSZYtFSzGperEQCFLrXW7OyWbRHBI2krMlb3WzSlotdrIs7JNsSHBxec9ZhqEqW6jv5TnelP6XyAf9/3/82DE/SMq0ggA/oqEmahe260H3Mdxxvv/7eTAat1+7LW5Dvufp3MJsy+3s/zX6vtJMBABMzBzRT4wB4ANMA5AKjARwGowC4CPP5PkPTpOPXQw/0IoMDYAwzo2DMJRUArCX6VhgaLjxZ1V3cXc4RAXFEmNdDqiNf2HCY0alyipV7EIr3MyjFs6ULc7IqtZVVmYiURnb8UdJhV2oqz/82LE/CNBtgwi/oSFeQ6KW1vs2iCjtuz+99L/x9fuT3UiIpmoq2ZkfsLpKVrlGbXk8XsjzdF99q/Oh+ucbsYPo8azfyYCgcYPA6YBoAgmAdgGB3qzuEc5XQVmHmArpgZ4DoYCgAWmAPgBCULMlAWvS18zOZcIFAQafkpe1Mu8nnTLa21b5T8iyiu6HM5+VciN+9Y8M3bfvn3KI0a2//NixP8m85YEAP6KhZyfOMOKLOVBOdnHTiGCGpha4Vetb6LSU+88xD2KPEUmM6s4oVCCQmbrroN7/JjJgDALyYNOI8BYAdMAbAIjAQQDgwFwAAPURj/TypItYxPUEmMEWAXT6nAdpDj6M6WzKZcLi5x7tKssaFha0W/I7X27FUPO5XWNetE1efIguz++ypdXMi61Ven7Xj7eZP1Xqv/zYsTzIzI2DALvxkz1pZrO0c7s7uZI6Yq0G109c5+Gn+/1gaeNRb737vDX+rvbvGW+ntPVaoA0/+5qdGAavGvHsiAGjAIFzALgBUwFcBVO2+hYjvn0kExKgCHMEFAGgcBsiwDOBgCALAACqbdqrudb3d3DICCJdfaZWc1VuZDBQa93PR0c5zJQiXZ1v+aXlqhIQirV60+tapoq3tb/82DE9iOSzgig/oqHJSpvu8qrlt1y1MXdE20pbMyPpbSndUkVN2ppdqA7lonLzMaJHSVMQU1FMy4xMDBVVVVVVVVVVVVVwALjQ06/PBsZAB0mB8hQgFAByUAAIgB4wC4BgN5PXwzg4gQkDDL4YCsB4cIcAYeiewCA9Tn6vZrBz2Icp4Tc/CRCx7Y5lUYUHrcOSsZa0DTA+6gfdRb/82LE9iM7mgzI78RMRqfMDxIi9+1J5fc2sPPa8XaHBdMPkKQlNsF39zUK210rRPMABAAV5CIAOMBUAeAsCWGD7BUphcgJwYHGBGGB8ghhiC5pWc0E8IH00s2hoCRcgYs4EsGEDArBgVYI+YBuAVGAQAB5gNoBCYA4AJGABAAy1GlqDyJnAGx4AeGQ3j+VDsNARDIrJ7jRY3Pyfs0q//NixOYdwJYZdP6EhFOzR7Gb0rZ126Ifb5umU+4U2MTVcxk9PnY+Lfwzt0Iqt+HRPM/1v7j+YZHPe6p53f3W6qiv3fv+d7Y9jZ89A9v1k9L0p/l2/Oy1FcEMz0lg4yy/Xb65DHkdKy2qYIcBIC6YDKC+GAMAFpgIgITrZiqILyY7Si9mEcBjJhYQkfWlJvlRqyYG2BLmFFA9BhdIQ//zYsT/MorWCAFfWAFUUqA642gM9FIDGQKAwwJwgBwGEwkTRmaAYrBoqZFQIAUDBgLAwUDV4ZHCyMQDBvAH7BqoUEh4ggMwOMzLhAhliGjmi5fkXIuT5FCKHi+ZF4ymReMf6jAvuZmCCDl0uqdVJJf/PIJlN1MzOpbGpiqjSMtH//zhomtV3WzrRZJKkktFGiiklUkl//6jI2RM0TL/82DExDT7oggFn6gAXQSUYPWcdA2X/UkpIynqlUxBTUUzLjEwMFVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gBwAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYMRwAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf94WdGHKEOYwpuv+houw0cSlzD9bA/3RYOb5BYp0JtX84XSDgcgXMgaTSXgBDb588bgZGRugYlwqgiBf7sm4GHcLYGDsDYcGBg3BT/4GBcAoxQMDIDwCgFkL//gYCQBhbMtg2zDbz4Wj///iP0g1f/zYsRvAAADSAFAAABjjcSmONxO////+T6AzZXQIubyfTm6f////+5TJ9Avl+Qd5EzA0MDRv//////zRaZuhdBicWXPeoPVAgBCYAUDBGARAFJgJYKMYAoABGBahHphjgawYoInpGG8hlJpU6iqYvOCjGJU5e5rNRMAYF6CjGbMpwJhBISYfnyM1mJdgRwHFrAcOEBtTgAV8G0AscD/82LE/yoT7dgBnrABsRCxUawckACGAGDC6GyNNRNF8gQZeDVRkNkc8+RcwWXTorYXMZEOHEUicMkEzyVRocJonlmRWWaLN00jRJTrdFSReNlOlSSSNDNjNNNJBkFKWmtE6zvVu7+pkluugtm6SmRzWpSCp1J1qdVSnW/RVtZFNFJl2TroMcZSbu7LUmm6l0Nez6mbZkq7pIIqZV6j//NixOY747oQAZ+gAciL5nXrIcQwR9V0i9ycQWABzAMgH0wLgEXMGQCrzCOgsUwiYC1MFCD5THYic03LZvmNaiiEDKdyG4xP0JQGgcowJ4DNMCeAaTAPQFgwEkAYT9Ls+Dhq5J0Nuor/C5GLN7Kv1FyWqLRyOm8L29i/XKb/1S3//+p7RT1ULot6lQShRWv5qq8QJRRuevGFQoYWCv/zYMSGHNBeGAHfEACYBYAbmAtgVxozq8+auSmJmEPAU5gOIBgcxYQkxx8HZjVn1mrUPBmvWld+IMW9tVb/aT8V/T7brfmY//5S7+qSoa9iEvWxKkxWL13kyOsAoQxyxrL5BD1O4fcxILzE4sMBPAUjAmgPU2OKNeOOmUDjDhwLYwMoA3OmMEookLT3X07Nr8+d3v+/rvO0tz7T5P/zYsShGABeIFTn8kQPkX6xUCqrtzKow56MvijnfLhtNTKFkqe3ahyn0QjC35KzrijglUjsR6KlaDUmTEFNRSx/lvKZW0OwI7/3DDYwMOCkwEgBFMCZA1DXrY705W8lrMO0AVTA1QBAIAsSIBTBwAohgo/AUyjXM/MjdQwd1VyLXWAFjKVc4osLv32H2sScBArtZcXO4WbeQNQhKqH/82LE0Ru4mhRK5/REau4a2XPoAZYeg4KvKT7rIYWJTZSm9ZsmC7EPajnMMpXRNjqrEkOoFBjzCWAqUwCQBRMApAPjAawFYwOYETOE01Tj3gC40xYkAvBQUgCyc0wCMjDzAQ0RADP5hFFUdkZHLcBQ49klJrur38o8SOVYws3uyIt3dCb0q9yy+tDOwkct1o29UO9omt4nkuqPJVvY//NixO4fuJYUKufGTM9Ckt1f5mlaxUqLPKlvLs8piVOjVO2rIzSxRj5c2w75vasP7+VrcKfxTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVcAA4pXI5JJWqoIA50iUph1MY45+M/ZfgMJRJt5IvSVAtZoLWf/zYMT/JfN2CAL+yoWnokXV/p8d6hT7f04rFOSq4yL7/1VX67vRt/O/2IXsYiznvVWaVnMAbBKzCKggsEAGYJAGjANQAowJ4CHNncvgDqhI3kxDcElMD0AXD1qzcGjOlTChy5DD5w1hyDrqUcYXCI5NVbnlZlt2QwojpLI7L3ss91KcxEZrWR5nRiOmqiUt7a91dFR6VMuhmWvdX//zYsSzEOhOWb6GOiJa2ZnRldjVbVR6zkElOQnamm1QIg0Eg64equREU3kKhry6CZwkNkxBTUUzLjEwMKqqqqqqqqqqqqoI8Vqr/1t6DBSIOjxYqgpRciACDAQQCYzlNxlNWBaEDCFANIwG8A/Ohg0STEARUWO/FvR4w1w9oiqAjjgJnHEp4m21mlO898JE7cDrV1oFgoqNbCa2TlD/82LE/yUysgwq/oqE9YmjWHWVCqAAwXn102L5BQuBlkhRjaImJWMRUUchxisZTEFNRf1u4zMwD0DXMKWCCQqANhgAgYACALmA0AGZsx228b9tx4mGPg+ZgWAFYc2uapcZs6YsOECFfxREYcyIzMZxcJh3Ik62VLJv5RgixFzGT2Il9nqaetFut6ejucRLoZl36H3QbcIZMVIl0Oyw//NixOcd+F4cVOfyRNJujddPS89rCboyKsUTh1tYcaGhGtyBeFkhEbsQpC1qTEFNRTMuMTAwqqqqqqqqqqqqqqqqqoAASimmv/D5QYUFx1N2KAIXCoAYEADRmHLmaZQq/vGB2AhhgE4CqY0QBLLOJ0L3hF8swbQGhAy1k6cNql1ilQpOVjIGCDVsSguUQqMKHLarHmxh8mKE0C7oc//zYMT7IpoGCAD+ioQq4++QWh8jtUxFMyQ5G5IqVWkWRLKUfehNFh2MIOQpjUxBTUUzLjEwMN/+EvIgIYwqgG5JgA4wCIAJMAcAQ2qmqyb2Bghn0qYAWEVhYDCCt0CLjCkwcHHginMgMiKz3dx7h8BwmtFYu5/W3YiCa0TMzPpq0tzqKKid9kW6SrbRVL0/dSURvOvXS+521pd7kf/zYsTpHoBaHZTn8kTQyIt3XFKomZLPOT97sumuz3Q6qve/TR69/T3a2qUZ8dX9d7GTAQAHkwq0GMMAEABTAJwBgwDUBKBQC4aZXwRmlfenhg44Q4YCoBemTrCJSFBCFBECW7AwZmYyyIomAAE9DM88my975wWkPzqkRHmex5m+Tp2X8oxIZxpCtIS5OPX1zBqn0Sk9X2XuffuZ+Z3/82LE9iGcCggA/oqEvddP96BmV43w/XL6+9xHP3vOHxnW3NGgTfKfV08BvhD3qZVMQU3X6xbkYemwdWK+AQYMJgjMBEASzAXwB80NLiaN8v5IzDCgfcwKUCsMA8ATTADwB5BlfyIq9pCiGHd0ZmBzgYvN0SrXRv2GFIZYMGUttzIrbOzlrXa5qon3dAQJgIGnvUIzJkJOEjDQ8KCy//NgxP8kUboIAP6GhT1CMzH603Kped5mxWwXFEGCdR+bEIWoTFmg4ZSLsbRWSXDXM9oMAAjAEwHcwDcCtMG3AwDCJQqUweME1MICDyjICDAYwxHHZN2Qj9DNPQ+0FBUhMEzGCOAWRgGoB+YBKAMmAdAHAyADvEpgsSKPu18AghgLgvE4cAoMUFg4aLi9ihlIYhZ72hmiVNkzV9LM//NixPkiebYIAO/ETM+/VGe827xCcv086Jc1zM1W4+vj+6j+5ioj+bj/9X+6jrdVfOv+a53+Imr+2+E+/f5i4f+r+t5/ie5/uePWb6pqnqZq4199am4GEU9ZUfUwEEA7MAXCLTALgHUwEIFKZVAZjyATuYCtR+GHFimRidpNo6qVRvSpnOYRiCZGUGjfRhT4J67abwHioYBpocAMAv/zYsT/L1vqDANfQAEA1M/QNYIMDNRZC+QpciAGKBABhYIANBAA0EBoYGAgvSOgSAY5wsgGxsAkFAYHAAb8OUi2GqyTIuMeMmIDBgIWaOEjvjMIHSAEEKihyRcpBZiQEmv5oXCLn2KaZkeIsbJGReRYyMf+apnDhqpE1NmRWxqjRRUk///6iVXTQSRRc3Poqc1rRRWiip16v//5dQL/82LE0TjjZgABn6gB8gpJA3nEVmKTrWeTCfOhQisWVUxBTUUzLjEwMFVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NgxHAAAANIAcAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NgxHAAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NgxHAAAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82DEcAAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYMRwAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYsRvAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVMQU1FMy4xMDBVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVX/82LEbwAAA0gAAAAAVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV//NixG8AAANIAAAAAFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVTEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zYMRwAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ=="></audio>
+
+<!-- Просмотр фото из чата -->
+<div id="photo-viewer-overlay">
+  <button class="close-photo-viewer" title="Закрыть">✕</button>
+  <img id="photo-viewer-img" src="" />
+</div>
 
 <!-- Просмотр истории -->
 <div id="story-viewer" class="call-overlay">
@@ -474,6 +524,8 @@ function startApp(){
   db.ref('users').on('value', snap => {
     usersCache = snap.val() || {};
     refreshAllChatDisplays();
+    renderFriendsModal();
+    renderFriendsQuickpicks();
   });
   db.ref('userChats/' + myClientId).on('value', snap => {
     const ids = [];
@@ -485,6 +537,171 @@ function startApp(){
     renderStoriesBar();
   });
   watchNewRegistrations();
+  watchFriends();
+}
+
+// ===== Друзья: заявки, список, быстрый выбор при создании чата =====
+let friendsCache = {};        // uid -> true
+let friendRequestsCache = {}; // fromUid -> { username, ts }
+
+function watchFriends(){
+  db.ref('friends/' + myClientId).on('value', snap => {
+    friendsCache = snap.val() || {};
+    renderFriendsModal();
+    renderFriendsQuickpicks();
+  });
+  db.ref('friendRequests/' + myClientId).on('value', snap => {
+    friendRequestsCache = snap.val() || {};
+    renderFriendsModal();
+    const count = Object.keys(friendRequestsCache).length;
+    const badge = document.getElementById('friends-req-badge');
+    badge.style.display = count > 0 ? 'flex' : 'none';
+    badge.textContent = count > 9 ? '9+' : count;
+  });
+}
+
+// Отправить заявку в друзья по логину
+function sendFriendRequest(username, onError){
+  const uname = username.trim().toLowerCase();
+  if(!uname){ onError('Введи логин'); return; }
+  db.ref('usernames/' + uname).once('value').then(snap => {
+    if(!snap.exists()){ onError('Пользователь с таким логином не найден'); return; }
+    const uid = snap.val();
+    if(uid === myClientId){ onError('Это твой собственный логин'); return; }
+    if(friendsCache[uid]){ onError('Вы уже друзья'); return; }
+    db.ref('friendRequests/' + uid + '/' + myClientId).once('value').then(existing => {
+      if(existing.exists()){ onError('Заявка уже отправлена'); return; }
+      db.ref('friendRequests/' + uid + '/' + myClientId).set({ username: myProfile.name, ts: Date.now() }).then(() => {
+        document.getElementById('add-friend-input').value = '';
+      });
+    });
+  });
+}
+
+function acceptFriendRequest(fromUid){
+  db.ref('friends/' + myClientId + '/' + fromUid).set(true);
+  db.ref('friends/' + fromUid + '/' + myClientId).set(true);
+  db.ref('friendRequests/' + myClientId + '/' + fromUid).remove();
+}
+
+function declineFriendRequest(fromUid){
+  db.ref('friendRequests/' + myClientId + '/' + fromUid).remove();
+}
+
+function removeFriend(uid){
+  db.ref('friends/' + myClientId + '/' + uid).remove();
+  db.ref('friends/' + uid + '/' + myClientId).remove();
+}
+
+function renderFriendsModal(){
+  const reqSection = document.getElementById('friend-requests-section');
+  const reqList = document.getElementById('friend-requests-list');
+  if(!reqList) return; // модалка ещё не загружена в DOM
+  const reqUids = Object.keys(friendRequestsCache);
+  reqSection.style.display = reqUids.length > 0 ? 'block' : 'none';
+  reqList.innerHTML = '';
+  reqUids.forEach(uid => {
+    const req = friendRequestsCache[uid];
+    const row = document.createElement('div');
+    row.className = 'friend-row';
+    const u = usersCache[uid] || {};
+    const avatarHtml = u.avatar
+      ? `<img src="${u.avatar}" class="avatar" style="object-fit:cover;" />`
+      : `<div class="avatar">${initials(req.username || '?')}</div>`;
+    row.innerHTML = `${avatarHtml}<div class="friend-row-name">${req.username}${devCheckHtml(req.username)}</div>`;
+    const acceptBtn = document.createElement('button');
+    acceptBtn.className = 'friend-row-btn accept';
+    acceptBtn.textContent = 'Принять';
+    acceptBtn.onclick = () => acceptFriendRequest(uid);
+    const declineBtn = document.createElement('button');
+    declineBtn.className = 'friend-row-btn decline';
+    declineBtn.textContent = '✕';
+    declineBtn.onclick = () => declineFriendRequest(uid);
+    row.appendChild(acceptBtn);
+    row.appendChild(declineBtn);
+    reqList.appendChild(row);
+  });
+
+  const list = document.getElementById('friends-list');
+  const friendUids = Object.keys(friendsCache);
+  list.innerHTML = '';
+  if(friendUids.length === 0){
+    list.innerHTML = '<div style="font-size:12px;color:var(--muted);">Пока нет друзей — добавь кого-нибудь по логину выше</div>';
+    return;
+  }
+  friendUids.forEach(uid => {
+    const u = usersCache[uid] || {};
+    const row = document.createElement('div');
+    row.className = 'friend-row';
+    const avatarHtml = u.avatar
+      ? `<img src="${u.avatar}" class="avatar" style="object-fit:cover;" />`
+      : `<div class="avatar">${initials(u.username || '?')}</div>`;
+    row.innerHTML = `${avatarHtml}<div class="friend-row-name">${u.username || '?'}${devCheckHtml(u.username)}</div>`;
+    const msgBtn = document.createElement('button');
+    msgBtn.className = 'friend-row-btn';
+    msgBtn.textContent = 'Написать';
+    msgBtn.onclick = () => {
+      document.getElementById('friends-modal').style.display = 'none';
+      startPrivateChat(u.username, () => {});
+    };
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'friend-row-btn remove';
+    removeBtn.textContent = '✕';
+    removeBtn.onclick = () => removeFriend(uid);
+    row.appendChild(msgBtn);
+    row.appendChild(removeBtn);
+    list.appendChild(row);
+  });
+}
+
+// Быстрый выбор друзей при создании личного/группового чата и при
+// добавлении участника в уже существующую группу
+function renderFriendsQuickpicks(){
+  const friendUids = Object.keys(friendsCache);
+  const dmBox = document.getElementById('dm-friends-quickpick');
+  if(dmBox){
+    dmBox.innerHTML = '';
+    friendUids.forEach(uid => {
+      const u = usersCache[uid] || {};
+      const chip = document.createElement('button');
+      chip.className = 'friend-chip';
+      chip.textContent = u.username || '?';
+      chip.onclick = () => { document.getElementById('new-chat-partner').value = u.username || ''; };
+      dmBox.appendChild(chip);
+    });
+  }
+  const groupBox = document.getElementById('group-friends-quickpick');
+  if(groupBox){
+    groupBox.innerHTML = '';
+    friendUids.forEach(uid => {
+      const u = usersCache[uid] || {};
+      if(groupMembers.find(m => m.uid === uid)) return;
+      const chip = document.createElement('button');
+      chip.className = 'friend-chip';
+      chip.textContent = '+ ' + (u.username || '?');
+      chip.onclick = () => {
+        if(!groupMembers.find(m => m.uid === uid)) groupMembers.push({ uid, username: u.username });
+        renderGroupMembers();
+        renderFriendsQuickpicks();
+      };
+      groupBox.appendChild(chip);
+    });
+  }
+  const groupInfoBox = document.getElementById('group-info-friends-quickpick');
+  if(groupInfoBox){
+    groupInfoBox.innerHTML = '';
+    const chat = chats.find(c => c.id === groupInfoChatId);
+    const existingMembers = (chat && chat.meta && chat.meta.members) || {};
+    friendUids.forEach(uid => {
+      if(existingMembers[uid]) return;
+      const u = usersCache[uid] || {};
+      const chip = document.createElement('button');
+      chip.className = 'friend-chip';
+      chip.textContent = '+ ' + (u.username || '?');
+      chip.onclick = () => addMemberToGroup(uid, u.username);
+      groupInfoBox.appendChild(chip);
+    });
+  }
 }
 
 // Уведомление владельцу приложения о каждом новом зарегистрированном пользователе
@@ -711,7 +928,7 @@ function renderChatList(){
       ${avatarHtml}
       <div class="chat-meta">
         <div class="chat-name">${chat.name}${nameDevBadge}</div>
-        <div class="chat-last">${last ? last.text : ''}</div>
+        <div class="chat-last">${last ? (last.image ? '📷 Фото' + (last.text ? ': ' + last.text : '') : last.text) : ''}</div>
       </div>
       ${badgeHtml}`;
     div.onclick = () => openChat(chat.id);
@@ -734,9 +951,9 @@ function updateChatHeader(chat){
   }
   const callBtn = document.getElementById('call-btn');
   const videoCallBtn = document.getElementById('video-call-btn');
-  const isDmChat = chat.meta && chat.meta.type === 'dm';
-  callBtn.style.display = isDmChat ? 'block' : 'none';
-  videoCallBtn.style.display = isDmChat ? 'block' : 'none';
+  const canCall = chat.meta && (chat.meta.type === 'dm' || chat.meta.type === 'group');
+  callBtn.style.display = canCall ? 'block' : 'none';
+  videoCallBtn.style.display = canCall ? 'block' : 'none';
   const clickable = isGroup ? 'pointer' : 'default';
   document.getElementById('chat-header-avatar-wrap').style.cursor = clickable;
   document.getElementById('chat-header-name').style.cursor = clickable;
@@ -776,7 +993,12 @@ function renderMessages(){
     div.className = 'bubble ' + (isMine ? 'out' : 'in');
     const isGroup = chat.meta && chat.meta.type === 'group';
     const senderLabel = (!isMine && isGroup && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}${devCheckHtml(m.senderName)}</div>` : '';
-    div.innerHTML = `${senderLabel}${m.text}<time>${m.time}</time>`;
+    const photoHtml = m.image ? `<img src="${m.image}" class="msg-photo" />` : '';
+    const textHtml = m.text ? m.text : '';
+    div.innerHTML = `${senderLabel}${photoHtml}${textHtml}<time>${m.time}</time>`;
+    if(m.image){
+      div.querySelector('.msg-photo').onclick = () => openPhotoViewer(m.image);
+    }
     box.appendChild(div);
   });
   box.scrollTop = box.scrollHeight;
@@ -794,6 +1016,23 @@ function sendMessage(){
     senderName: myProfile.name || 'Аноним', senderAvatar: myProfile.avatar || null
   });
   input.value = '';
+}
+
+// Отправка фото прямо в чат
+function sendPhotoMessage(dataUrl){
+  if(!activeChatId) return;
+  const chat = chats.find(c => c.id === activeChatId);
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  db.ref('chats/' + chat.id + '/messages').push({
+    text: '', image: dataUrl, time, clientId: myClientId, ts: Date.now(),
+    senderName: myProfile.name || 'Аноним', senderAvatar: myProfile.avatar || null
+  });
+}
+
+function openPhotoViewer(src){
+  document.getElementById('photo-viewer-img').src = src;
+  document.getElementById('photo-viewer-overlay').style.display = 'flex';
 }
 
 document.getElementById('search-input').addEventListener('input', e => {
@@ -917,6 +1156,38 @@ document.getElementById('send-btn').onclick = sendMessage;
 document.getElementById('msg-input').addEventListener('keydown', e => {
   if(e.key === 'Enter') sendMessage();
 });
+
+document.getElementById('attach-photo-btn').onclick = () => {
+  if(!activeChatId) return;
+  document.getElementById('chat-photo-input').click();
+};
+document.getElementById('chat-photo-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if(!file || !activeChatId) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const maxSize = 720;
+      let w = img.width, h = img.height;
+      if(w > h && w > maxSize){ h = Math.round(h * maxSize / w); w = maxSize; }
+      else if(h >= w && h > maxSize){ w = Math.round(w * maxSize / h); h = maxSize; }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+      sendPhotoMessage(dataUrl);
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  e.target.value = '';
+});
+
+document.getElementById('photo-viewer-overlay').onclick = () => {
+  document.getElementById('photo-viewer-overlay').style.display = 'none';
+  document.getElementById('photo-viewer-img').src = '';
+};
 
 // Подпись внизу слева мешает при вводе сообщения — прячем её, пока печатаем
 const creditEl = document.getElementById('credit');
@@ -1046,10 +1317,28 @@ document.getElementById('add-chat-btn').onclick = () => {
   document.getElementById('new-group-member-input').value = '';
   groupMembers = [];
   renderGroupMembers();
+  renderFriendsQuickpicks();
   document.getElementById('add-chat-error').textContent = '';
   setAddChatMode('dm');
   document.getElementById('add-chat-modal').style.display = 'flex';
 };
+
+document.getElementById('friends-btn').onclick = () => {
+  document.getElementById('add-friend-input').value = '';
+  document.getElementById('friends-error').textContent = '';
+  renderFriendsModal();
+  document.getElementById('friends-modal').style.display = 'flex';
+};
+document.getElementById('close-friends-btn').onclick = () => {
+  document.getElementById('friends-modal').style.display = 'none';
+};
+document.getElementById('add-friend-btn').onclick = () => {
+  const errorEl = document.getElementById('friends-error');
+  sendFriendRequest(document.getElementById('add-friend-input').value, msg => { errorEl.textContent = msg; });
+};
+document.getElementById('add-friend-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('add-friend-btn').click();
+});
 document.getElementById('cancel-chat-btn').onclick = () => {
   document.getElementById('add-chat-modal').style.display = 'none';
 };
@@ -1134,6 +1423,7 @@ function openGroupInfo(chatId){
   renderGroupInfoMembers(chat);
   document.getElementById('group-add-member-input').value = '';
   document.getElementById('group-info-error').textContent = '';
+  renderFriendsQuickpicks();
   document.getElementById('group-info-modal').style.display = 'flex';
 }
 document.getElementById('close-group-info-btn').onclick = () => {
@@ -1171,13 +1461,24 @@ document.getElementById('group-info-avatar-input').addEventListener('change', e 
   reader.readAsDataURL(file);
 });
 
-function addMemberToGroup(){
+function addMemberToGroup(directUid, directUsername){
   const input = document.getElementById('group-add-member-input');
   const errorEl = document.getElementById('group-info-error');
-  const uname = input.value.trim().toLowerCase();
   errorEl.textContent = '';
-  if(!uname || !groupInfoChatId) return;
+  if(!groupInfoChatId) return;
   const chat = chats.find(c => c.id === groupInfoChatId);
+  // Можно вызвать либо с готовым uid (клик по другу в быстром списке),
+  // либо без параметров — тогда логин берётся из поля ввода
+  if(directUid){
+    if(chat.meta.members && chat.meta.members[directUid]){ errorEl.textContent = 'Этот человек уже в группе'; return; }
+    db.ref('chats/' + groupInfoChatId + '/meta/members/' + directUid).set(true).then(() => {
+      db.ref('userChats/' + directUid + '/' + groupInfoChatId).set(true);
+      renderFriendsQuickpicks();
+    });
+    return;
+  }
+  const uname = input.value.trim().toLowerCase();
+  if(!uname) return;
   db.ref('usernames/' + uname).once('value').then(snap => {
     if(!snap.exists()){ errorEl.textContent = 'Пользователь с таким логином не найден'; return; }
     const uid = snap.val();
@@ -1185,6 +1486,7 @@ function addMemberToGroup(){
     db.ref('chats/' + groupInfoChatId + '/meta/members/' + uid).set(true).then(() => {
       db.ref('userChats/' + uid + '/' + groupInfoChatId).set(true);
       input.value = '';
+      renderFriendsQuickpicks();
     });
   });
 }
@@ -1220,6 +1522,16 @@ let activeCandidatesRef = null;
 let callRole = null; // 'caller' | 'callee'
 let currentCallHasVideo = false;
 let isCameraOff = false;
+
+// ===== Групповые звонки (несколько участников сразу, обычные и видео) =====
+let isGroupCall = false;
+let groupCallChatId = null;
+let groupCallSessionId = null;
+let groupCallHasVideo = false;
+let groupPeers = {};            // otherUid -> { pc, candRef, offerRef, answerRef }
+let groupParticipantsRef = null;
+let groupCallSeenSessions = {}; // chatId -> sessionId уже показанного/обработанного звонка
+let incomingGroupCallData = null;
 
 function attachPeerCommon(pc){
   pc.ontrack = e => {
@@ -1284,23 +1596,39 @@ let callWatchedChats = {}; // chatId -> true, для каких DM-чатов у
 let isMuted = false;
 
 function watchCallsForChat(chat){
-  if(!chat.meta || chat.meta.type !== 'dm') return;
+  if(!chat.meta) return;
   if(callWatchedChats[chat.id]) return;
   callWatchedChats[chat.id] = true;
-  db.ref('calls/' + chat.id).on('value', snap => {
-    const call = snap.val();
-    if(!call){ return; }
-    if(call.status === 'ringing' && call.from !== myClientId && !peerConn){
-      showIncomingCall(chat.id, call);
-    }
-    if(call.status === 'active' && callRole === 'caller' && currentCallChatId === chat.id && call.answer && peerConn && !peerConn.currentRemoteDescription){
-      peerConn.setRemoteDescription(new RTCSessionDescription(call.answer));
-      setCallStatus('Соединяемся...');
-    }
-    if(call.status === 'ended' && currentCallChatId === chat.id){
-      endCallCleanup();
-    }
-  });
+  if(chat.meta.type === 'dm'){
+    db.ref('calls/' + chat.id).on('value', snap => {
+      const call = snap.val();
+      if(!call){ return; }
+      if(call.status === 'ringing' && call.from !== myClientId && !peerConn && !isGroupCall){
+        showIncomingCall(chat.id, call);
+      }
+      if(call.status === 'active' && callRole === 'caller' && currentCallChatId === chat.id && call.answer && peerConn && !peerConn.currentRemoteDescription){
+        peerConn.setRemoteDescription(new RTCSessionDescription(call.answer));
+        setCallStatus('Соединяемся...');
+      }
+      if(call.status === 'ended' && currentCallChatId === chat.id && !isGroupCall){
+        endCallCleanup();
+      }
+    });
+  } else if(chat.meta.type === 'group'){
+    // Лёгкий "звонок" — только флаг активной сессии; сами данные для
+    // WebRTC-соединений (участники, offer/answer/ICE) живут отдельно,
+    // чтобы этот слушатель не срабатывал на каждый чих сигнализации
+    db.ref('groupCallSessions/' + chat.id).on('value', snap => {
+      const call = snap.val();
+      if(!call || !call.active) return;
+      if(groupCallSeenSessions[chat.id] === call.sessionId) return;
+      const iAmMember = chat.meta.members && chat.meta.members[myClientId];
+      if(iAmMember && call.startedBy !== myClientId && !isGroupCall && !peerConn){
+        groupCallSeenSessions[chat.id] = call.sessionId;
+        showIncomingGroupCall(chat.id, call);
+      }
+    });
+  }
 }
 
 function getOtherUidForChat(chatId){
@@ -1365,6 +1693,314 @@ async function startCall(chatId, withVideo){
     status: 'ringing', from: myClientId, callerName: myProfile.name, hasVideo: currentCallHasVideo,
     offer: { sdp: offer.sdp, type: offer.type }, startedAt: Date.now()
   });
+}
+
+// ----- Групповой звонок: тот, кто начинает, создаёт новую "сессию";
+// каждый, кто присоединяется, устанавливает отдельное WebRTC-соединение
+// со всеми остальными участниками (полносвязная сетка) -----
+async function startGroupCall(chatId, withVideo){
+  const chat = chats.find(c => c.id === chatId);
+  if(!chat || !chat.meta) return;
+  const sessionId = 'gc_' + Date.now();
+  isGroupCall = true;
+  groupCallChatId = chatId;
+  groupCallSessionId = sessionId;
+  groupCallHasVideo = !!withVideo;
+  currentCallHasVideo = groupCallHasVideo;
+  currentCallChatId = chatId;
+  callRole = 'caller';
+  groupCallSeenSessions[chatId] = sessionId;
+
+  document.getElementById('active-call-name').textContent = chat.name;
+  avatarInitialsHtml(document.getElementById('active-call-avatar'), chat.name, chat.avatar);
+  setCallStatus(groupCallHasVideo ? 'Видеозвонок...' : 'Звоним...');
+  document.getElementById('active-call-overlay').style.display = 'flex';
+  document.getElementById('active-call-box').classList.add('group-call-mode');
+  document.getElementById('camera-call-btn').style.display = groupCallHasVideo ? 'flex' : 'none';
+  playRingtone();
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: groupCallHasVideo ? { facingMode: 'user' } : false });
+  } catch(e) {
+    setCallStatus('Нет доступа к микрофону' + (groupCallHasVideo ? '/камере' : ''));
+    setTimeout(() => { hideCallOverlays(); document.getElementById('active-call-box').classList.remove('group-call-mode'); }, 1500);
+    stopRingtone();
+    isGroupCall = false; groupCallChatId = null; groupCallSessionId = null; groupCallHasVideo = false;
+    currentCallChatId = null; currentCallHasVideo = false; callRole = null;
+    return;
+  }
+  addSelfCallTile();
+  await db.ref('groupCallSessions/' + chatId).set({
+    sessionId, active: true, hasVideo: groupCallHasVideo,
+    startedBy: myClientId, startedByName: myProfile.name, startedAt: Date.now()
+  });
+  await db.ref('calls/' + chatId + '/sessions/' + sessionId + '/participants/' + myClientId).set({ username: myProfile.name, joinedAt: Date.now() });
+  stopRingtone();
+  setCallStatus('Ждём участников...');
+  startCallTimer();
+  watchGroupParticipants(chatId, sessionId);
+}
+
+function showIncomingGroupCall(chatId, call){
+  incomingGroupCallData = { chatId, call };
+  currentCallHasVideo = !!call.hasVideo;
+  const chat = chats.find(c => c.id === chatId);
+  const chatName = chat ? chat.name : 'Группа';
+  document.getElementById('incoming-call-name').textContent = chatName;
+  avatarInitialsHtml(document.getElementById('incoming-call-avatar'), chatName, chat ? chat.avatar : null);
+  document.getElementById('incoming-call-status').textContent = (call.startedByName || 'Кто-то') + ' звонит в группу' + (currentCallHasVideo ? ' (видео)' : '');
+  document.getElementById('incoming-call-overlay').style.display = 'flex';
+  playRingtone();
+  if(navigator.vibrate) navigator.vibrate([500, 300, 500, 300, 500]);
+  if(notifPermission === 'granted' && document.hidden){
+    try {
+      const n = new Notification('Групповой звонок', { body: (call.startedByName || 'Кто-то') + ' звонит в "' + chatName + '"', tag: 'gcall-' + chatId });
+      n.onclick = () => { window.focus(); };
+    } catch(e) {}
+  }
+}
+
+async function acceptGroupCall(){
+  if(!incomingGroupCallData) return;
+  const { chatId, call } = incomingGroupCallData;
+  incomingGroupCallData = null;
+  document.getElementById('incoming-call-overlay').style.display = 'none';
+  stopRingtone();
+  await joinGroupCall(chatId, call.sessionId, !!call.hasVideo);
+}
+
+function declineGroupCall(){
+  incomingGroupCallData = null;
+  document.getElementById('incoming-call-overlay').style.display = 'none';
+  stopRingtone();
+}
+
+async function joinGroupCall(chatId, sessionId, withVideo){
+  const chat = chats.find(c => c.id === chatId);
+  isGroupCall = true;
+  groupCallChatId = chatId;
+  groupCallSessionId = sessionId;
+  groupCallHasVideo = !!withVideo;
+  currentCallHasVideo = groupCallHasVideo;
+  currentCallChatId = chatId;
+  callRole = 'callee';
+  groupCallSeenSessions[chatId] = sessionId;
+
+  document.getElementById('active-call-name').textContent = chat ? chat.name : 'Группа';
+  avatarInitialsHtml(document.getElementById('active-call-avatar'), chat ? chat.name : '?', chat ? chat.avatar : null);
+  setCallStatus('Соединяемся...');
+  document.getElementById('active-call-overlay').style.display = 'flex';
+  document.getElementById('active-call-box').classList.add('group-call-mode');
+  document.getElementById('camera-call-btn').style.display = groupCallHasVideo ? 'flex' : 'none';
+
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: groupCallHasVideo ? { facingMode: 'user' } : false });
+  } catch(e) {
+    setCallStatus('Нет доступа к микрофону' + (groupCallHasVideo ? '/камере' : ''));
+    setTimeout(() => { hideCallOverlays(); document.getElementById('active-call-box').classList.remove('group-call-mode'); }, 1500);
+    isGroupCall = false; groupCallChatId = null; groupCallSessionId = null; groupCallHasVideo = false;
+    currentCallChatId = null; currentCallHasVideo = false; callRole = null;
+    return;
+  }
+  addSelfCallTile();
+  await db.ref('calls/' + chatId + '/sessions/' + sessionId + '/participants/' + myClientId).set({ username: myProfile.name, joinedAt: Date.now() });
+  watchGroupParticipants(chatId, sessionId);
+  setCallStatus('Соединено');
+  startCallTimer();
+}
+
+function watchGroupParticipants(chatId, sessionId){
+  groupParticipantsRef = db.ref('calls/' + chatId + '/sessions/' + sessionId + '/participants');
+  groupParticipantsRef.on('child_added', snap => {
+    const uid = snap.key;
+    if(uid === myClientId) return;
+    connectToGroupPeer(chatId, sessionId, uid, snap.val());
+  });
+  groupParticipantsRef.on('child_removed', snap => {
+    const uid = snap.key;
+    teardownGroupPeer(uid);
+    removeCallTile(uid);
+  });
+}
+
+// Для каждой пары участников звонящий с "меньшим" uid всегда делает
+// предложение (offer) — так оба участника договариваются, кто есть кто,
+// не устраивая одновременно два встречных звонка друг другу
+function connectToGroupPeer(chatId, sessionId, otherUid, info){
+  if(groupPeers[otherUid]) return;
+  const pairKey = [myClientId, otherUid].sort().join('_');
+  const amOfferer = myClientId < otherUid;
+  const pc = new RTCPeerConnection(ICE_SERVERS);
+  const peerInfo = { pc, candRef: null, offerRef: null, answerRef: null };
+  groupPeers[otherUid] = peerInfo;
+  if(localStream) localStream.getTracks().forEach(t => pc.addTrack(t, localStream));
+
+  pc.ontrack = e => { setCallTileStream(otherUid, (info && info.username), e.streams[0]); };
+  pc.onicecandidate = e => {
+    if(e.candidate) db.ref('calls/' + chatId + '/sessions/' + sessionId + '/peers/' + pairKey + '/candidates_' + myClientId).push(e.candidate.toJSON());
+  };
+  pc.onconnectionstatechange = () => {
+    if(pc.connectionState === 'failed' || pc.connectionState === 'closed'){
+      teardownGroupPeer(otherUid);
+      removeCallTile(otherUid);
+    }
+  };
+
+  const candRef = db.ref('calls/' + chatId + '/sessions/' + sessionId + '/peers/' + pairKey + '/candidates_' + otherUid);
+  candRef.on('child_added', snap => { pc.addIceCandidate(new RTCIceCandidate(snap.val())).catch(()=>{}); });
+  peerInfo.candRef = candRef;
+
+  const peerRef = db.ref('calls/' + chatId + '/sessions/' + sessionId + '/peers/' + pairKey);
+  if(amOfferer){
+    pc.createOffer().then(offer => pc.setLocalDescription(offer).then(() => {
+      peerRef.child('offer').set({ sdp: offer.sdp, type: offer.type });
+    }));
+    const answerRef = peerRef.child('answer');
+    const cb = snap => {
+      const ans = snap.val();
+      if(ans && !pc.currentRemoteDescription){
+        pc.setRemoteDescription(new RTCSessionDescription(ans)).catch(()=>{});
+      }
+    };
+    answerRef.on('value', cb);
+    peerInfo.answerRef = { ref: answerRef, cb };
+  } else {
+    const offerRef = peerRef.child('offer');
+    const cb = snap => {
+      const off = snap.val();
+      if(off && !pc.currentRemoteDescription){
+        pc.setRemoteDescription(new RTCSessionDescription(off))
+          .then(() => pc.createAnswer())
+          .then(answer => pc.setLocalDescription(answer).then(() => {
+            peerRef.child('answer').set({ sdp: answer.sdp, type: answer.type });
+          })).catch(()=>{});
+      }
+    };
+    offerRef.on('value', cb);
+    peerInfo.offerRef = { ref: offerRef, cb };
+  }
+  addCallTile(otherUid, info && info.username);
+}
+
+function teardownGroupPeer(otherUid){
+  const info = groupPeers[otherUid];
+  if(!info) return;
+  if(info.pc) info.pc.close();
+  if(info.candRef) info.candRef.off();
+  if(info.answerRef) info.answerRef.ref.off('value', info.answerRef.cb);
+  if(info.offerRef) info.offerRef.ref.off('value', info.offerRef.cb);
+  delete groupPeers[otherUid];
+}
+
+function addCallTile(uid, username){
+  const box = document.getElementById('group-call-tiles');
+  if(document.getElementById('gc-tile-' + uid)) return;
+  const tile = document.createElement('div');
+  tile.className = 'gc-tile';
+  tile.id = 'gc-tile-' + uid;
+  const u = usersCache[uid] || {};
+  const label = username || u.username || '?';
+  const av = document.createElement('div');
+  av.className = 'gc-avatar';
+  av.textContent = initials(label);
+  const nameEl = document.createElement('div');
+  nameEl.className = 'gc-name';
+  nameEl.textContent = label;
+  tile.appendChild(av);
+  tile.appendChild(nameEl);
+  box.appendChild(tile);
+}
+
+function setCallTileStream(uid, username, stream){
+  addCallTile(uid, username);
+  const tile = document.getElementById('gc-tile-' + uid);
+  if(!tile) return;
+  const hasVideoTrack = stream.getVideoTracks().length > 0;
+  if(hasVideoTrack){
+    let videoEl = tile.querySelector('video');
+    if(!videoEl){
+      videoEl = document.createElement('video');
+      videoEl.autoplay = true; videoEl.playsInline = true;
+      tile.insertBefore(videoEl, tile.firstChild);
+      const avatarEl = tile.querySelector('.gc-avatar');
+      if(avatarEl) avatarEl.style.display = 'none';
+    }
+    videoEl.srcObject = stream;
+    videoEl.play().catch(()=>{});
+  } else {
+    let audioEl = tile.querySelector('audio');
+    if(!audioEl){
+      audioEl = document.createElement('audio');
+      audioEl.autoplay = true;
+      tile.appendChild(audioEl);
+    }
+    audioEl.srcObject = stream;
+    audioEl.play().catch(()=>{});
+  }
+}
+
+function addSelfCallTile(){
+  const box = document.getElementById('group-call-tiles');
+  if(!box || document.getElementById('gc-tile-self')) return;
+  const tile = document.createElement('div');
+  tile.className = 'gc-tile';
+  tile.id = 'gc-tile-self';
+  if(groupCallHasVideo && localStream){
+    const videoEl = document.createElement('video');
+    videoEl.autoplay = true; videoEl.playsInline = true; videoEl.muted = true;
+    videoEl.style.transform = 'scaleX(-1)';
+    videoEl.srcObject = localStream;
+    tile.appendChild(videoEl);
+  } else {
+    const av = document.createElement('div');
+    av.className = 'gc-avatar';
+    av.textContent = 'Я';
+    tile.appendChild(av);
+  }
+  const nameEl = document.createElement('div');
+  nameEl.className = 'gc-name';
+  nameEl.textContent = 'Я';
+  tile.appendChild(nameEl);
+  box.insertBefore(tile, box.firstChild);
+}
+
+function removeCallTile(uid){
+  const tile = document.getElementById('gc-tile-' + uid);
+  if(tile) tile.remove();
+}
+
+function endGroupCallCleanup(){
+  clearInterval(callTimerInterval);
+  stopRingtone();
+  Object.keys(groupPeers).forEach(uid => teardownGroupPeer(uid));
+  groupPeers = {};
+  if(groupParticipantsRef){ groupParticipantsRef.off(); groupParticipantsRef = null; }
+  if(groupCallChatId && groupCallSessionId){
+    const partRef = db.ref('calls/' + groupCallChatId + '/sessions/' + groupCallSessionId + '/participants');
+    partRef.child(myClientId).remove().then(() => {
+      partRef.once('value').then(snap => {
+        if(!snap.exists()) db.ref('groupCallSessions/' + groupCallChatId + '/active').set(false);
+      });
+    });
+  }
+  if(localStream){ localStream.getTracks().forEach(t => t.stop()); localStream = null; }
+  document.getElementById('group-call-tiles').innerHTML = '';
+  document.getElementById('active-call-box').classList.remove('group-call-mode');
+  hideCallOverlays();
+  document.getElementById('mute-call-btn').classList.remove('muted');
+  document.getElementById('mute-call-btn').textContent = '🎤';
+  document.getElementById('camera-call-btn').style.display = 'none';
+  document.getElementById('camera-call-btn').classList.remove('muted');
+  document.getElementById('camera-call-btn').textContent = '🎥';
+  isMuted = false;
+  isCameraOff = false;
+  isGroupCall = false;
+  groupCallChatId = null;
+  groupCallSessionId = null;
+  groupCallHasVideo = false;
+  currentCallChatId = null;
+  currentCallHasVideo = false;
+  callRole = null;
 }
 
 function playRingtone(){
@@ -1506,15 +2142,39 @@ function endCallCleanup(){
 }
 
 function hangUp(){
+  if(isGroupCall){
+    endGroupCallCleanup();
+    return;
+  }
   if(currentCallChatId) db.ref('calls/' + currentCallChatId).set({ status: 'ended' });
   endCallCleanup();
 }
 
-document.getElementById('call-btn').onclick = () => { if(activeChatId) startCall(activeChatId, false); };
-document.getElementById('video-call-btn').onclick = () => { if(activeChatId) startCall(activeChatId, true); };
-document.getElementById('accept-call-btn').onclick = acceptCall;
-document.getElementById('decline-call-btn').onclick = declineCall;
+document.getElementById('call-btn').onclick = () => {
+  if(!activeChatId) return;
+  const chat = chats.find(c => c.id === activeChatId);
+  if(chat && chat.meta && chat.meta.type === 'group') startGroupCall(activeChatId, false);
+  else startCall(activeChatId, false);
+};
+document.getElementById('video-call-btn').onclick = () => {
+  if(!activeChatId) return;
+  const chat = chats.find(c => c.id === activeChatId);
+  if(chat && chat.meta && chat.meta.type === 'group') startGroupCall(activeChatId, true);
+  else startCall(activeChatId, true);
+};
+document.getElementById('accept-call-btn').onclick = () => {
+  if(incomingGroupCallData) acceptGroupCall();
+  else acceptCall();
+};
+document.getElementById('decline-call-btn').onclick = () => {
+  if(incomingGroupCallData) declineGroupCall();
+  else declineCall();
+};
 document.getElementById('end-call-btn').onclick = hangUp;
+document.getElementById('active-call-box').addEventListener('click', () => {
+  if(!isGroupCall) return;
+  document.querySelectorAll('#group-call-tiles video, #group-call-tiles audio').forEach(el => { el.play().catch(()=>{}); });
+});
 document.getElementById('enable-audio-btn').onclick = () => {
   document.getElementById('remote-audio').play().catch(()=>{});
   document.getElementById('remote-video').play().catch(()=>{});
