@@ -72,6 +72,12 @@
   }
   body[data-theme="light"] .bubble time{ color:rgba(0,0,0,0.4); }
   .theme-opt.selected, .color-opt.selected{ outline:2px solid var(--accent); }
+  .visibility-opt.selected{background:var(--accent);color:#fff;}
+  #chat-header-titlewrap{display:flex;flex-direction:column;min-width:0;flex:1;justify-content:center;}
+  #chat-header-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #chat-header-status{font-size:11.5px;font-weight:400;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  #chat-header-status.typing{color:var(--accent);}
+  .read-tick{margin-left:2px;}
   .chat-mode-btn{flex:1;padding:8px;border-radius:10px;border:1px solid transparent;background:var(--panel2);color:var(--muted);cursor:pointer;font-size:13px;}
   .chat-mode-btn.selected{background:var(--accent);color:#fff;}
   .member-chip{display:flex;align-items:center;gap:5px;background:var(--panel2);color:var(--text);border-radius:20px;padding:4px 8px 4px 10px;font-size:12px;}
@@ -257,6 +263,15 @@
         <button id="notif-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;">🔔 Включить уведомления</button>
       </div>
 
+      <div style="margin-bottom:16px;">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px;">Кому видно, что я в сети</div>
+        <div style="display:flex;gap:6px;">
+          <button class="visibility-opt" data-vis="all" style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid transparent;background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px;">Все</button>
+          <button class="visibility-opt" data-vis="friends" style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid transparent;background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px;">Друзья</button>
+          <button class="visibility-opt" data-vis="nobody" style="flex:1;padding:8px 4px;border-radius:10px;border:1px solid transparent;background:var(--panel2);color:var(--text);cursor:pointer;font-size:12px;">Никто</button>
+        </div>
+      </div>
+
       <div class="settings-section">
         <div class="settings-section-title">Аккаунт</div>
         <button id="change-password-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;margin-bottom:8px;">🔑 Изменить пароль</button>
@@ -316,7 +331,10 @@
         <img id="chat-header-avatar" class="avatar" style="width:32px;height:32px;object-fit:cover;display:none;" />
         <div id="chat-header-avatar-fallback" class="avatar" style="width:32px;height:32px;display:none;font-size:14px;"></div>
       </div>
-      <span id="chat-header-name">Выбери чат</span>
+      <div id="chat-header-titlewrap">
+        <span id="chat-header-name">Выбери чат</span>
+        <span id="chat-header-status"></span>
+      </div>
       <button id="video-call-btn" title="Видеозвонок" style="display:none;">🎥</button>
       <button id="call-btn" title="Позвонить" style="display:none;">📞</button>
     </div>
@@ -538,6 +556,119 @@ function startApp(){
   });
   watchNewRegistrations();
   watchFriends();
+  setupPresence();
+}
+
+// ===== Присутствие: "в сети" / "был(а) недавно" =====
+// Пишется всегда по-честному, а решение "показывать или нет" принимается
+// на экране у ТОГО, КТО СМОТРИТ — по настройке владельца профиля
+let onlineVisibility = 'all'; // 'all' | 'friends' | 'nobody' — моя собственная настройка
+function setupPresence(){
+  db.ref('.info/connected').on('value', snap => {
+    if(snap.val() !== true) return;
+    const onlineRef = db.ref('users/' + myClientId + '/online');
+    const lastSeenRef = db.ref('users/' + myClientId + '/lastSeen');
+    onlineRef.onDisconnect().set(false);
+    lastSeenRef.onDisconnect().set(Date.now());
+    onlineRef.set(true);
+  });
+  db.ref('users/' + myClientId + '/onlineVisibility').once('value').then(snap => {
+    onlineVisibility = snap.val() || 'all';
+    updateVisibilityButtons();
+  });
+}
+
+function setOnlineVisibility(vis){
+  onlineVisibility = vis;
+  db.ref('users/' + myClientId + '/onlineVisibility').set(vis);
+  updateVisibilityButtons();
+}
+
+function updateVisibilityButtons(){
+  document.querySelectorAll('.visibility-opt').forEach(b => b.classList.toggle('selected', b.dataset.vis === onlineVisibility));
+}
+
+// Может ли ТЕКУЩИЙ пользователь видеть онлайн-статус пользователя targetUid,
+// с учётом его настройки приватности
+function canSeeOnline(targetUid){
+  if(targetUid === myClientId) return true;
+  const u = usersCache[targetUid] || {};
+  const vis = u.onlineVisibility || 'all';
+  if(vis === 'nobody') return false;
+  if(vis === 'friends') return !!friendsCache[targetUid];
+  return true;
+}
+
+function formatLastSeen(ts){
+  if(!ts) return 'не в сети';
+  const diffMin = Math.floor((Date.now() - ts) / 60000);
+  if(diffMin < 1) return 'был(а) только что';
+  if(diffMin < 60) return 'был(а) ' + diffMin + ' мин назад';
+  const diffH = Math.floor(diffMin / 60);
+  if(diffH < 24) return 'был(а) ' + diffH + ' ч назад';
+  return 'был(а) давно';
+}
+
+function pluralMembers(count){
+  const mod10 = count % 10, mod100 = count % 100;
+  let word = 'участников';
+  if(mod10 === 1 && mod100 !== 11) word = 'участник';
+  else if(mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) word = 'участника';
+  return count + ' ' + word;
+}
+
+// Текст статуса под именем чата — онлайн/был(а) для личных чатов,
+// число участников для групп
+function headerStatusTextForChat(chat){
+  if(!chat.meta) return '';
+  if(chat.meta.type === 'group'){
+    return pluralMembers(Object.keys(chat.meta.members || {}).length);
+  }
+  const otherUid = otherMemberUid(chat.meta);
+  if(!otherUid) return '';
+  if(!canSeeOnline(otherUid)) return '';
+  const u = usersCache[otherUid] || {};
+  return u.online ? 'в сети' : formatLastSeen(u.lastSeen);
+}
+
+// ===== "Печатает..." — быстрый статус только для сейчас открытого чата =====
+let typingListenerRef = null;
+let currentTypingUids = [];
+
+function watchTypingForActiveChat(chatId){
+  if(typingListenerRef) typingListenerRef.off();
+  currentTypingUids = [];
+  typingListenerRef = db.ref('typing/' + chatId);
+  typingListenerRef.on('value', snap => {
+    const data = snap.val() || {};
+    const now = Date.now();
+    currentTypingUids = Object.keys(data).filter(uid => uid !== myClientId && data[uid] && (now - data[uid] < 4000));
+    const chat = chats.find(c => c.id === chatId);
+    if(chat && activeChatId === chatId) renderChatHeaderStatus(chat);
+  });
+}
+
+function stopWatchingTyping(){
+  if(typingListenerRef){ typingListenerRef.off(); typingListenerRef = null; }
+  currentTypingUids = [];
+}
+
+function renderChatHeaderStatus(chat){
+  const el = document.getElementById('chat-header-status');
+  if(!el) return;
+  if(!chat){ el.textContent = ''; el.classList.remove('typing'); return; }
+  if(chat.id === activeChatId && currentTypingUids.length > 0){
+    el.classList.add('typing');
+    if(chat.meta && chat.meta.type === 'group'){
+      const names = currentTypingUids.map(uid => (usersCache[uid] || {}).username || '?');
+      el.textContent = names.length === 1 ? (names[0] + ' печатает...') : (names.join(', ') + ' печатают...');
+    } else {
+      el.textContent = 'печатает...';
+    }
+    return;
+  }
+  el.classList.remove('typing');
+  el.textContent = headerStatusTextForChat(chat);
 }
 
 // ===== Друзья: заявки, список, быстрый выбор при создании чата =====
@@ -824,9 +955,17 @@ function updateNotifBtn(){
   else btn.textContent = '🔔 Включить уведомления';
 }
 
+// Кэш "прочитано" по чатам: chatId -> { uid: ts }, нужен для галочек
+// "Просмотрено" под своим последним сообщением в личных чатах
+let chatReads = {};
+
 function listenToChat(chat){
   const ref = db.ref('chats/' + chat.id + '/messages');
   let firstLoad = true;
+  db.ref('chats/' + chat.id + '/reads').on('value', snap => {
+    chatReads[chat.id] = snap.val() || {};
+    if(activeChatId === chat.id) renderMessages();
+  });
   ref.on('value', snap => {
     const msgs = [];
     snap.forEach(child => { msgs.push(child.val()); });
@@ -851,8 +990,7 @@ function listenToChat(chat){
     if(activeChatId === chat.id){
       // Чат открыт прямо сейчас — сразу помечаем как прочитанный
       const lastMsg = msgs[msgs.length - 1];
-      lastSeen[chat.id] = lastMsg ? (lastMsg.ts || Date.now()) : Date.now();
-      saveLastSeen();
+      markChatRead(chat.id, lastMsg ? (lastMsg.ts || Date.now()) : Date.now());
     }
 
     renderChatList();
@@ -957,11 +1095,18 @@ function updateChatHeader(chat){
   const clickable = isGroup ? 'pointer' : 'default';
   document.getElementById('chat-header-avatar-wrap').style.cursor = clickable;
   document.getElementById('chat-header-name').style.cursor = clickable;
+  renderChatHeaderStatus(chat);
 }
 
 function openGroupInfoIfApplicable(){
   const chat = chats.find(c => c.id === activeChatId);
   if(chat && chat.meta && chat.meta.type === 'group') openGroupInfo(chat.id);
+}
+
+function markChatRead(chatId, ts){
+  lastSeen[chatId] = ts;
+  saveLastSeen();
+  db.ref('chats/' + chatId + '/reads/' + myClientId).set(ts);
 }
 
 function openChat(id){
@@ -970,16 +1115,17 @@ function openChat(id){
   if(!chat) return;
   // Отмечаем чат прочитанным
   const lastMsg = chat.messages[chat.messages.length - 1];
-  lastSeen[id] = lastMsg ? (lastMsg.ts || Date.now()) : Date.now();
-  saveLastSeen();
+  markChatRead(id, lastMsg ? (lastMsg.ts || Date.now()) : Date.now());
   renderChatList();
   updateChatHeader(chat);
+  watchTypingForActiveChat(id);
   document.getElementById('app').classList.add('chat-open');
   renderMessages();
 }
 
 function closeChat(){
   document.getElementById('app').classList.remove('chat-open');
+  stopWatchingTyping();
 }
 
 function renderMessages(){
@@ -987,7 +1133,14 @@ function renderMessages(){
   const chat = chats.find(c => c.id === activeChatId);
   box.innerHTML = '';
   if(!chat) return;
-  chat.messages.forEach(m => {
+  const isDm = chat.meta && chat.meta.type === 'dm';
+  const otherUid = isDm ? otherMemberUid(chat.meta) : null;
+  const reads = chatReads[chat.id] || {};
+  const otherReadTs = (isDm && otherUid) ? (reads[otherUid] || 0) : 0;
+  let lastMineIndex = -1;
+  chat.messages.forEach((m, i) => { if(m.clientId === myClientId) lastMineIndex = i; });
+
+  chat.messages.forEach((m, i) => {
     const isMine = m.clientId === myClientId;
     const div = document.createElement('div');
     div.className = 'bubble ' + (isMine ? 'out' : 'in');
@@ -995,7 +1148,12 @@ function renderMessages(){
     const senderLabel = (!isMine && isGroup && m.senderName) ? `<div style="font-size:11px;font-weight:600;color:var(--accent);margin-bottom:2px;">${m.senderName}${devCheckHtml(m.senderName)}</div>` : '';
     const photoHtml = m.image ? `<img src="${m.image}" class="msg-photo" />` : '';
     const textHtml = m.text ? m.text : '';
-    div.innerHTML = `${senderLabel}${photoHtml}${textHtml}<time>${m.time}</time>`;
+    let tickHtml = '';
+    if(isMine && isDm && i === lastMineIndex){
+      const isRead = otherReadTs >= (m.ts || 0);
+      tickHtml = ` <span class="read-tick" title="${isRead ? 'Просмотрено' : 'Отправлено'}">${isRead ? '✓✓' : '✓'}</span>`;
+    }
+    div.innerHTML = `${senderLabel}${photoHtml}${textHtml}<time>${m.time}${tickHtml}</time>`;
     if(m.image){
       div.querySelector('.msg-photo').onclick = () => openPhotoViewer(m.image);
     }
@@ -1016,6 +1174,8 @@ function sendMessage(){
     senderName: myProfile.name || 'Аноним', senderAvatar: myProfile.avatar || null
   });
   input.value = '';
+  clearTimeout(typingSelfTimeout);
+  db.ref('typing/' + chat.id + '/' + myClientId).remove();
 }
 
 // Отправка фото прямо в чат
@@ -1157,6 +1317,23 @@ document.getElementById('msg-input').addEventListener('keydown', e => {
   if(e.key === 'Enter') sendMessage();
 });
 
+// Сообщаем собеседнику(-ам), что мы сейчас печатаем — статус сам
+// пропадёт через несколько секунд после последнего нажатия клавиши
+let typingSelfTimeout = null;
+document.getElementById('msg-input').addEventListener('input', () => {
+  if(!activeChatId) return;
+  const ref = db.ref('typing/' + activeChatId + '/' + myClientId);
+  if(document.getElementById('msg-input').value){
+    ref.set(Date.now());
+    ref.onDisconnect().remove();
+    clearTimeout(typingSelfTimeout);
+    typingSelfTimeout = setTimeout(() => { ref.remove(); }, 3000);
+  } else {
+    ref.remove();
+    clearTimeout(typingSelfTimeout);
+  }
+});
+
 document.getElementById('attach-photo-btn').onclick = () => {
   if(!activeChatId) return;
   document.getElementById('chat-photo-input').click();
@@ -1201,6 +1378,7 @@ msgInputEl.addEventListener('input', () => {
 document.getElementById('settings-btn').onclick = () => {
   applyProfileToUI();
   updateNotifBtn();
+  updateVisibilityButtons();
   document.getElementById('settings-modal').style.display = 'flex';
 };
 document.getElementById('close-settings').onclick = () => {
@@ -1209,6 +1387,9 @@ document.getElementById('close-settings').onclick = () => {
 document.getElementById('notif-btn').onclick = () => {
   if(notifPermission !== 'granted') requestNotifPermission();
 };
+document.querySelectorAll('.visibility-opt').forEach(btn => {
+  btn.onclick = () => setOnlineVisibility(btn.dataset.vis);
+});
 document.getElementById('logout-btn').onclick = () => {
   auth.signOut();
 };
