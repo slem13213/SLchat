@@ -232,8 +232,43 @@
       </div>
     </div>
   </div>
+
+  <!-- Информация о группе: аватарка, список участников, добавление новых -->
+  <div id="group-info-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:12;align-items:center;justify-content:center;">
+    <div style="background:var(--panel);border-radius:14px;padding:20px;width:300px;max-width:90vw;max-height:80vh;overflow-y:auto;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div style="position:relative;flex-shrink:0;">
+          <img id="group-info-avatar-preview" class="avatar" style="width:56px;height:56px;object-fit:cover;display:none;cursor:pointer;" />
+          <div id="group-info-avatar-placeholder" class="avatar" style="width:56px;height:56px;cursor:pointer;font-size:22px;">👥</div>
+          <input id="group-info-avatar-input" type="file" accept="image/*" style="display:none;" />
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div id="group-info-name" style="font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+          <button id="group-info-avatar-btn" style="background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;padding:0;">Сменить фото группы</button>
+        </div>
+      </div>
+      <div class="settings-section-title">Участники</div>
+      <div id="group-members-info-list" style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px;"></div>
+      <div class="settings-section-title">Добавить участника</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input id="group-add-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
+        <button id="group-add-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
+      </div>
+      <div id="group-info-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:10px;"></div>
+      <button id="close-group-info-btn" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
+    </div>
+  </div>
+
   <div id="main">
-    <div id="chat-header"><button id="back-btn">←</button><img id="chat-header-avatar" class="avatar" style="width:32px;height:32px;object-fit:cover;display:none;vertical-align:middle;margin-right:8px;" /><span id="chat-header-name">Выбери чат</span><button id="call-btn" title="Позвонить" style="display:none;">📞</button></div>
+    <div id="chat-header">
+      <button id="back-btn">←</button>
+      <div id="chat-header-avatar-wrap" style="position:relative;width:32px;height:32px;margin-right:8px;flex-shrink:0;">
+        <img id="chat-header-avatar" class="avatar" style="width:32px;height:32px;object-fit:cover;display:none;" />
+        <div id="chat-header-avatar-fallback" class="avatar" style="width:32px;height:32px;display:none;font-size:14px;"></div>
+      </div>
+      <span id="chat-header-name">Выбери чат</span>
+      <button id="call-btn" title="Позвонить" style="display:none;">📞</button>
+    </div>
     <div id="messages"></div>
     <div id="input-row">
       <input id="msg-input" placeholder="Написать сообщение..." />
@@ -392,6 +427,7 @@ function syncChatMembership(ids){
         watchCallsForChat(chat);
         renderChatList();
         if(activeChatId === id) updateChatHeader(chat);
+        if(groupInfoChatId === id) renderGroupInfoMembers(chat);
         if(pendingOpenId === id){
           pendingOpenId = null;
           openChat(id);
@@ -428,6 +464,7 @@ function startApp(){
 // пользователе. ADMIN_USERNAME — это логин, под которым нужно получать
 // такие уведомления (сейчас настроено на "slem2").
 const ADMIN_USERNAME = 'slem2';
+const ADMIN_LOG_CHAT_ID = 'admin_registration_log';
 function watchNewRegistrations(){
   if(!myProfile.name || myProfile.name.toLowerCase() !== ADMIN_USERNAME) return;
   db.ref('usernames').once('value').then(initialSnap => {
@@ -439,6 +476,32 @@ function watchNewRegistrations(){
       if(notifPermission === 'granted'){
         try { new Notification('Новая регистрация в SLchat', { body: '@' + child.key + ' только что зарегистрировался(-лась)' }); } catch(e) {}
       }
+    });
+  });
+}
+
+// Пишем в отдельный служебный чат "Регистрации", который виден только
+// администратору — сообщение сохранится в базе и будет ждать его там,
+// даже если в момент регистрации он был offline
+function logRegistrationForAdmin(username){
+  db.ref('usernames/' + ADMIN_USERNAME).once('value').then(snap => {
+    if(!snap.exists()) return; // админ ещё сам не зарегистрирован — логировать некуда
+    const adminUid = snap.val();
+    const chatRef = db.ref('chats/' + ADMIN_LOG_CHAT_ID + '/meta');
+    chatRef.once('value').then(metaSnap => {
+      if(!metaSnap.exists()){
+        const members = {}; members[adminUid] = true;
+        chatRef.set({
+          id: ADMIN_LOG_CHAT_ID, name: 'Регистрации', type: 'group',
+          members, avatar: null, createdBy: 'system', createdAt: Date.now()
+        });
+      }
+      db.ref('userChats/' + adminUid + '/' + ADMIN_LOG_CHAT_ID).set(true);
+      db.ref('chats/' + ADMIN_LOG_CHAT_ID + '/messages').push({
+        text: '🆕 Зарегистрировался(-лась) @' + username,
+        time: new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        clientId: 'system', ts: Date.now(), senderName: 'Система'
+      });
     });
   });
 }
@@ -612,9 +675,10 @@ function renderChatList(){
     const last = chat.messages[chat.messages.length - 1];
     const div = document.createElement('div');
     div.className = 'chat-item' + (chat.id === activeChatId ? ' active' : '');
+    const isGroup = chat.meta && chat.meta.type === 'group';
     const avatarHtml = chat.avatar
       ? `<img src="${chat.avatar}" class="avatar" style="object-fit:cover;" />`
-      : `<div class="avatar">${initials(chat.name)}</div>`;
+      : `<div class="avatar">${isGroup ? '👥' : initials(chat.name)}</div>`;
     const unread = unreadCount(chat);
     const badgeHtml = unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : '';
     div.innerHTML = `
@@ -632,11 +696,26 @@ function renderChatList(){
 function updateChatHeader(chat){
   document.getElementById('chat-header-name').textContent = chat.name;
   const headerAvatar = document.getElementById('chat-header-avatar');
-  if(chat.avatar){ headerAvatar.src = chat.avatar; headerAvatar.style.display = 'inline-block'; }
-  else { headerAvatar.style.display = 'none'; }
+  const headerFallback = document.getElementById('chat-header-avatar-fallback');
+  const isGroup = chat.meta && chat.meta.type === 'group';
+  if(chat.avatar){
+    headerAvatar.src = chat.avatar; headerAvatar.style.display = 'block';
+    headerFallback.style.display = 'none';
+  } else {
+    headerAvatar.style.display = 'none';
+    headerFallback.style.display = 'flex';
+    headerFallback.textContent = isGroup ? '👥' : initials(chat.name);
+  }
   const callBtn = document.getElementById('call-btn');
-  const isDm = chat.meta && chat.meta.type === 'dm';
-  callBtn.style.display = isDm ? 'block' : 'none';
+  callBtn.style.display = (chat.meta && chat.meta.type === 'dm') ? 'block' : 'none';
+  const clickable = isGroup ? 'pointer' : 'default';
+  document.getElementById('chat-header-avatar-wrap').style.cursor = clickable;
+  document.getElementById('chat-header-name').style.cursor = clickable;
+}
+
+function openGroupInfoIfApplicable(){
+  const chat = chats.find(c => c.id === activeChatId);
+  if(chat && chat.meta && chat.meta.type === 'group') openGroupInfo(chat.id);
 }
 
 function openChat(id){
@@ -986,6 +1065,104 @@ document.getElementById('new-group-name').addEventListener('keydown', e => {
 });
 
 document.getElementById('back-btn').onclick = closeChat;
+document.getElementById('chat-header-avatar-wrap').onclick = openGroupInfoIfApplicable;
+document.getElementById('chat-header-name').onclick = openGroupInfoIfApplicable;
+
+// ===== Информация о группе: фото, список участников, добавление людей
+// в любой момент (не только при создании группы) =====
+let groupInfoChatId = null;
+
+function renderGroupInfoMembers(chat){
+  const box = document.getElementById('group-members-info-list');
+  box.innerHTML = '';
+  const memberUids = Object.keys((chat.meta && chat.meta.members) || {});
+  memberUids.forEach(uid => {
+    const u = usersCache[uid] || {};
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;';
+    const avatarHtml = u.avatar
+      ? `<img src="${u.avatar}" class="avatar" style="width:34px;height:34px;object-fit:cover;" />`
+      : `<div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials(u.username || '?')}</div>`;
+    row.innerHTML = `${avatarHtml}<div style="font-size:13px;">${u.username || '?'}${uid === myClientId ? ' (ты)' : ''}</div>`;
+    box.appendChild(row);
+  });
+}
+
+function openGroupInfo(chatId){
+  const chat = chats.find(c => c.id === chatId);
+  if(!chat || !chat.meta) return;
+  groupInfoChatId = chatId;
+  document.getElementById('group-info-name').textContent = chat.meta.name || 'Группа';
+  const preview = document.getElementById('group-info-avatar-preview');
+  const placeholder = document.getElementById('group-info-avatar-placeholder');
+  if(chat.meta.avatar){
+    preview.src = chat.meta.avatar; preview.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    preview.style.display = 'none';
+    placeholder.style.display = 'flex';
+  }
+  renderGroupInfoMembers(chat);
+  document.getElementById('group-add-member-input').value = '';
+  document.getElementById('group-info-error').textContent = '';
+  document.getElementById('group-info-modal').style.display = 'flex';
+}
+document.getElementById('close-group-info-btn').onclick = () => {
+  document.getElementById('group-info-modal').style.display = 'none';
+  groupInfoChatId = null;
+};
+
+function openGroupAvatarPicker(){ document.getElementById('group-info-avatar-input').click(); }
+document.getElementById('group-info-avatar-btn').onclick = openGroupAvatarPicker;
+document.getElementById('group-info-avatar-preview').onclick = openGroupAvatarPicker;
+document.getElementById('group-info-avatar-placeholder').onclick = openGroupAvatarPicker;
+
+document.getElementById('group-info-avatar-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if(!file || !groupInfoChatId) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 160;
+      const canvas = document.createElement('canvas');
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      const side = Math.min(img.width, img.height);
+      const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+      ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+      db.ref('chats/' + groupInfoChatId + '/meta/avatar').set(dataUrl);
+      document.getElementById('group-info-avatar-preview').src = dataUrl;
+      document.getElementById('group-info-avatar-preview').style.display = 'block';
+      document.getElementById('group-info-avatar-placeholder').style.display = 'none';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+function addMemberToGroup(){
+  const input = document.getElementById('group-add-member-input');
+  const errorEl = document.getElementById('group-info-error');
+  const uname = input.value.trim().toLowerCase();
+  errorEl.textContent = '';
+  if(!uname || !groupInfoChatId) return;
+  const chat = chats.find(c => c.id === groupInfoChatId);
+  db.ref('usernames/' + uname).once('value').then(snap => {
+    if(!snap.exists()){ errorEl.textContent = 'Пользователь с таким логином не найден'; return; }
+    const uid = snap.val();
+    if(chat.meta.members && chat.meta.members[uid]){ errorEl.textContent = 'Этот человек уже в группе'; return; }
+    db.ref('chats/' + groupInfoChatId + '/meta/members/' + uid).set(true).then(() => {
+      db.ref('userChats/' + uid + '/' + groupInfoChatId).set(true);
+      input.value = '';
+    });
+  });
+}
+document.getElementById('group-add-member-btn').onclick = addMemberToGroup;
+document.getElementById('group-add-member-input').addEventListener('keydown', e => {
+  if(e.key === 'Enter'){ e.preventDefault(); addMemberToGroup(); }
+});
 
 // ===== Аудиозвонки (WebRTC + Firebase как "телефонная станция" для обмена
 // техническими данными о соединении). Публичные STUN-серверы Google помогают
@@ -998,8 +1175,13 @@ const ICE_SERVERS = { iceServers: [
   { urls: 'stun:stun1.l.google.com:19302' },
   { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
   { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
-]};
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+], iceCandidatePoolSize: 4 };
+
+// Если за это время соединение так и не установится — сообщаем об этом
+// честно, вместо того чтобы бесконечно висеть на "Соединяемся..."
+const CALL_CONNECT_TIMEOUT = 12000;
 
 let peerConn = null;
 let localStream = null;
@@ -1023,9 +1205,15 @@ function attachPeerCommon(pc){
     }
   };
   let alreadyConnected = false;
+  const connectTimeout = setTimeout(() => {
+    if(!alreadyConnected && peerConn === pc){
+      setCallStatus('Не удаётся соединиться 😕');
+    }
+  }, CALL_CONNECT_TIMEOUT);
   const markConnected = () => {
     if(alreadyConnected) return;
     alreadyConnected = true;
+    clearTimeout(connectTimeout);
     setCallStatus('Соединено');
     startCallTimer();
     stopRingtone();
@@ -1346,6 +1534,7 @@ function submitAuth(){
         const uid = cred.user.uid;
         db.ref('users/' + uid).set({ username, avatar: null });
         db.ref('usernames/' + uname).set(uid);
+        logRegistrationForAdmin(username);
       }).catch(err => {
         errorEl.textContent = authErrorText(err);
         submitBtn.disabled = false;
