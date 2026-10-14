@@ -285,8 +285,27 @@
   body[data-theme="light"] .sys-msg{background:rgba(255,255,255,0.8);color:#334;}
   .msg-sender{cursor:pointer;}
 
-  /* ===== Звонки ===== */
-  .call-overlay{position:fixed;inset:0;background:rgba(5,8,14,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20;display:none;align-items:center;justify-content:center;}
+  /* ===== Разработчик ===== */
+  .dev-check{background:var(--ig) !important;}
+  .verified-check{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:#4ea3f7;color:#fff;border-radius:50%;font-size:9px;vertical-align:middle;margin-left:4px;flex-shrink:0;}
+  .verified-pill{display:inline-flex;align-items:center;gap:3px;background:#4ea3f7;color:#fff;font-size:11px;font-weight:700;padding:2px 8px 2px 6px;border-radius:10px;vertical-align:middle;margin-left:6px;}
+  .dev-name{background:var(--ig);-webkit-background-clip:text;background-clip:text;color:transparent !important;}
+  .dev-panel-btn{display:block;width:100%;border:none;background:var(--ig);color:#fff;font-weight:700;font-size:14px;padding:11px;border-radius:12px;cursor:pointer;margin-bottom:14px;}
+  .dev-stats{display:flex;gap:8px;margin-bottom:16px;}
+  .dev-stat{flex:1;background:var(--panel2);border-radius:14px;padding:12px 8px;text-align:center;display:flex;flex-direction:column;gap:2px;}
+  .dev-stat b{font-size:22px;}
+  .dev-stat span{font-size:11.5px;color:var(--muted);}
+  .dev-textarea{width:100%;min-height:70px;resize:vertical;border-radius:12px;border:1px solid transparent;background:var(--panel2);color:var(--text);font:inherit;font-size:14px;padding:10px 12px;outline:none;}
+  .dev-textarea:focus{border-color:var(--accent);}
+  #announce-bar{display:none;align-items:flex-start;gap:10px;margin:2px 14px 8px;padding:10px 4px 10px 12px;border-radius:14px;background:linear-gradient(135deg,rgba(150,47,191,0.18),rgba(250,126,30,0.14));border:1px solid var(--line);flex-shrink:0;}
+  .announce-icon{font-size:20px;line-height:1.2;}
+  .announce-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;font-size:13.5px;line-height:1.4;}
+  .announce-body b{font-size:12px;color:var(--muted);}
+  .announce-body span{word-wrap:break-word;overflow-wrap:anywhere;}
+  #announce-bar .icon-btn{width:32px;height:32px;}
+  #announce-bar .icon-btn .ic{width:16px;height:16px;}
+
+  /* ===== Звонки ===== */  .call-overlay{position:fixed;inset:0;background:rgba(5,8,14,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20;display:none;align-items:center;justify-content:center;}
   .call-box{background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:34px 26px 28px;width:310px;max-width:92vw;text-align:center;position:relative;box-shadow:var(--shadow);}
   .call-box.video-mode{width:380px;max-width:94vw;padding:14px;}
   .call-avatar{width:96px;height:96px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:bold;color:#fff;font-size:36px;margin:0 auto 16px;object-fit:cover;box-shadow:0 0 0 6px rgba(255,255,255,0.05),0 0 0 14px rgba(255,255,255,0.03);animation:ring 2s infinite;}
@@ -425,6 +444,7 @@
       <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
       <input id="search-input" placeholder="Поиск" autocomplete="off" />
     </div>
+    <div id="announce-bar"></div>
     <div id="stories-bar"></div>
     <input id="story-file-input" type="file" accept="image/*" style="display:none;" />
     <div id="chat-filters">
@@ -565,6 +585,7 @@
       </div>
 
       <div class="settings-section">
+        <button id="dev-panel-btn" class="dev-panel-btn" style="display:none;">🛠 Панель разработчика</button>
         <div class="settings-section-title">Аккаунт</div>
         <button id="change-password-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;font-size:13px;margin-bottom:8px;">🔑 Изменить пароль</button>
         <button id="logout-btn" style="width:100%;padding:9px;border-radius:10px;border:none;background:var(--panel2);color:#f76e6e;cursor:pointer;font-size:13px;">Выйти из аккаунта</button>
@@ -647,8 +668,40 @@
         <button id="up-make-admin-btn" class="list-btn"></button>
         <button id="up-kick-btn" class="list-btn danger">Удалить из группы</button>
       </div>
+      <div id="up-dev-actions" style="display:none;">
+        <div class="settings-section-title">Разработчик</div>
+        <button id="up-verify-btn" class="list-btn"></button>
+        <button id="up-ban-btn" class="list-btn danger"></button>
+      </div>
       <div class="settings-section-title" id="up-common-title">Общие группы</div>
       <div id="up-common-groups" class="people-list"></div>
+    </div>
+  </div>
+
+  <!-- Панель разработчика — видна только админу приложения -->
+  <div id="dev-panel-modal" class="modal" style="display:none;z-index:12;">
+    <div>
+      <div class="sheet-head">
+        <h2>🛠 Панель разработчика</h2>
+        <button id="close-dev-panel-btn" class="icon-btn" title="Закрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="dev-stats">
+        <div class="dev-stat"><b id="dev-stat-users">0</b><span>пользователей</span></div>
+        <div class="dev-stat"><b id="dev-stat-online">0</b><span>сейчас в сети</span></div>
+        <div class="dev-stat"><b id="dev-stat-banned">0</b><span>заблокировано</span></div>
+      </div>
+      <div class="settings-section-title">Объявление для всех</div>
+      <textarea id="dev-announce-input" class="dev-textarea" maxlength="300" placeholder="Например: Вышло обновление! Теперь есть реакции 🔥"></textarea>
+      <div style="display:flex;gap:8px;margin:8px 0 16px;">
+        <button id="dev-announce-send" class="pill-btn primary" style="flex:1;">Опубликовать</button>
+        <button id="dev-announce-clear" class="pill-btn danger">Убрать текущее</button>
+      </div>
+      <div class="settings-section-title">Пользователи</div>
+      <div class="search-box">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="dev-users-search" placeholder="Поиск по нику" autocomplete="off" />
+      </div>
+      <div id="dev-users-list" class="people-list"></div>
     </div>
   </div>
 
@@ -887,11 +940,18 @@ function isDevUsername(name){
 }
 // Маленький значок (для тесных мест — списка чатов, участников группы)
 function devCheckHtml(name){
-  return isDevUsername(name) ? '<span class="dev-check" title="Разработчик">✓</span>' : '';
+  if(isDevUsername(name)) return '<span class="dev-check" title="Разработчик">✓</span>';
+  return isVerifiedName(name) ? '<span class="verified-check" title="Проверенный аккаунт">✓</span>' : '';
 }
+// Я — разработчик (особые права модерации)
+function isMeDev(){ return isDevUsername(myProfile && myProfile.name); }
+// Галочки «проверенный», которые выдаёт разработчик: verified/{ник} = true
+let verifiedCache = {};
+function isVerifiedName(name){ return !!name && !!verifiedCache[name.toLowerCase()]; }
 // Полный значок с подписью (для шапки чата, настроек)
 function devPillHtml(name){
-  return isDevUsername(name) ? '<span class="dev-pill" title="Разработчик">✓ Разработчик</span>' : '';
+  if(isDevUsername(name)) return '<span class="dev-pill" title="Разработчик">✓ Разработчик</span>';
+  return isVerifiedName(name) ? '<span class="verified-pill" title="Проверенный аккаунт">✓ Проверен</span>' : '';
 }
 
 // Теперь личность определяется настоящим логином (auth.uid), а не случайным
@@ -1008,6 +1068,8 @@ function startApp(){
     refreshAllChatDisplays();
     renderFriendsModal();
     renderFriendsQuickpicks();
+    refreshUserProfileIfOpen();
+    renderDevPanel();
   });
   db.ref('userChats/' + myClientId).on('value', snap => {
     const ids = [];
@@ -1024,6 +1086,7 @@ function startApp(){
   });
   watchNewRegistrations();
   watchFriends();
+  watchDevData();
   setupPresence();
 }
 
@@ -1423,7 +1486,7 @@ function renderUserProfile(){
   const gchat = profileGroupId && chats.find(c => c.id === profileGroupId);
   const gmeta = gchat && gchat.meta;
   const inGroup = gmeta && gmeta.members && gmeta.members[uid];
-  const canAdminToggle = inGroup && groupRole(gmeta, myClientId) === 'owner';
+  const canAdminToggle = inGroup && (groupRole(gmeta, myClientId) === 'owner' || isMeDev()) && groupRole(gmeta, uid) !== 'owner';
   const canKickHim = inGroup && canKick(gmeta, uid);
   adminBox.style.display = (canAdminToggle || canKickHim) ? 'block' : 'none';
   const adminBtn = document.getElementById('up-make-admin-btn');
@@ -1433,6 +1496,7 @@ function renderUserProfile(){
 
   // Общие группы
   const common = chats.filter(c => c.meta && c.meta.type === 'group' && c.meta.members && c.meta.members[uid] && c.meta.members[myClientId]);
+  renderDevProfileActions(uid);
   document.getElementById('up-common-title').style.display = common.length ? 'block' : 'none';
   const box = document.getElementById('up-common-groups');
   box.innerHTML = '';
@@ -1961,7 +2025,7 @@ function openMsgMenu(m, chat, x, y){
   reactionsRow.style.display = m._key ? 'flex' : 'none';
   document.getElementById('msg-copy-item').style.display = m.text ? 'flex' : 'none';
   document.getElementById('msg-edit-item').style.display = (isMine && m.text && !m.image && !m.audio && !m.videoNote && m._key) ? 'flex' : 'none';
-  document.getElementById('msg-delete-item').style.display = (isMine && m._key) ? 'flex' : 'none';
+  document.getElementById('msg-delete-item').style.display = ((isMine || isMeDev()) && m._key) ? 'flex' : 'none';
   const menu = document.getElementById('msg-menu');
   menu.classList.add('open');
   document.getElementById('msg-menu-overlay').classList.add('open');
@@ -2307,7 +2371,7 @@ function renderMessages(){
     const isGroup = chat.meta && chat.meta.type === 'group';
     const prev = chat.messages[i - 1];
     const grpStart = !prev || prev.clientId !== m.clientId;
-    const senderLabel = (!isMine && isGroup && m.senderName && grpStart) ? `<div class="msg-sender">${escapeHtml(m.senderName)}${devCheckHtml(m.senderName)}</div>` : '';
+    const senderLabel = (!isMine && isGroup && m.senderName && grpStart) ? `<div class="msg-sender${isDevUsername(m.senderName) ? ' dev-name' : ''}">${escapeHtml(m.senderName)}${devCheckHtml(m.senderName)}</div>` : '';
     const replyHtml = m.replyTo ? `<div class="reply-quote" data-key="${escapeHtml(m.replyTo.key || '')}"><b>${escapeHtml(m.replyTo.name || '')}</b><span>${escapeHtml(m.replyTo.text || '')}</span></div>` : '';
     const photoHtml = m.image ? `<img src="${m.image}" class="msg-photo" />` : '';
     const voiceHtml = m.audio ? `<div class="voice-msg" data-src="${m.audio}"><button class="voice-play-btn">▶</button><input type="range" class="voice-seek" min="0" max="100" value="0" step="0.1"><span class="voice-duration">${formatDuration(m.audioDuration)}</span></div>` : '';
@@ -3112,11 +3176,13 @@ function groupRole(meta, uid){
   return 'member';
 }
 function canManageGroup(meta){
+  if(isMeDev()) return true;
   const r = groupRole(meta, myClientId);
   return r === 'owner' || r === 'admin';
 }
 function canKick(meta, targetUid){
   if(!meta || targetUid === myClientId) return false;
+  if(isMeDev()) return true;
   const me = groupRole(meta, myClientId), them = groupRole(meta, targetUid);
   if(me === 'owner') return true;
   if(me === 'admin') return them === 'member';
@@ -3149,7 +3215,7 @@ function kickFromGroup(chat, uid){
 }
 
 function setGroupAdmin(chat, uid, makeAdmin){
-  if(groupRole(chat.meta, myClientId) !== 'owner') return;
+  if(groupRole(chat.meta, myClientId) !== 'owner' && !isMeDev()) return;
   db.ref('chats/' + chat.id + '/meta/admins/' + uid).set(makeAdmin ? true : null).then(() => {
     postSystemMessage(chat.id, userName(uid) + (makeAdmin ? ' теперь админ' : ' больше не админ'));
   }).catch(() => alert('Не получилось изменить права'));
@@ -3181,7 +3247,7 @@ function leaveGroup(chat){
 }
 
 function deleteGroup(chat){
-  if(!chat || groupRole(chat.meta, myClientId) !== 'owner') return;
+  if(!chat || (groupRole(chat.meta, myClientId) !== 'owner' && !isMeDev())) return;
   if(!confirm('Удалить группу «' + (chat.meta.name || 'Группа') + '» у всех участников вместе с перепиской? Это нельзя отменить.')) return;
   const id = chat.id;
   const updates = {};
@@ -3231,7 +3297,7 @@ function renderGroupInfoMembers(chat){
 
   // Шапка окна и что мне можно делать
   const manage = canManageGroup(meta);
-  const isOwner = groupRole(meta, myClientId) === 'owner';
+  const isOwner = groupRole(meta, myClientId) === 'owner' || isMeDev();
   document.getElementById('group-info-name').textContent = meta.name || 'Группа';
   document.getElementById('group-info-sub').textContent = pluralMembers(memberUids.length) +
     (isOwner ? ' · ты создатель' : manage ? ' · ты админ' : '');
@@ -3335,6 +3401,135 @@ document.getElementById('group-add-member-btn').onclick = () => addMemberToGroup
 document.getElementById('group-add-member-input').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); addMemberToGroup(); }
 });
+
+// ===== Привилегии разработчика (ник ADMIN_USERNAME) =====
+// Разработчик может: удалять любые сообщения, управлять любой группой,
+// выдавать галочку «проверенный», блокировать аккаунты, публиковать
+// объявление для всех и смотреть статистику.
+// ВАЖНО: всё это проверяется в приложении. Чтобы обычный человек не мог
+// сделать то же самое в обход интерфейса, нужны правила базы Firebase.
+let bannedCache = {};          // uid -> { by, ts }
+let announcement = null;       // { text, ts, by }
+const ANNOUNCE_SEEN_KEY = 'slchat_announce_dismissed';
+
+function watchDevData(){
+  db.ref('verified').on('value', snap => {
+    verifiedCache = snap.val() || {};
+    renderChatList();
+    if(activeChatId){ const c = chats.find(x => x.id === activeChatId); if(c){ updateChatHeader(c); renderMessages(); } }
+    refreshUserProfileIfOpen();
+    renderDevPanel();
+  }, () => {});
+  db.ref('announcement').on('value', snap => {
+    announcement = snap.val();
+    renderAnnouncement();
+  }, () => {});
+  // Если меня заблокировали — сразу выкидываем из аккаунта
+  db.ref('banned/' + myClientId).on('value', snap => {
+    if(snap.exists() && !isMeDev()){
+      alert('Твой аккаунт заблокирован администратором SLchat.');
+      auth.signOut();
+    }
+  }, () => {});
+  if(isMeDev()){
+    document.getElementById('dev-panel-btn').style.display = 'block';
+    db.ref('banned').on('value', snap => {
+      bannedCache = snap.val() || {};
+      refreshUserProfileIfOpen();
+      renderDevPanel();
+    }, () => {});
+  }
+}
+
+// Плашка объявления над историями — её можно закрыть, новое объявление покажется снова
+function renderAnnouncement(){
+  const bar = document.getElementById('announce-bar');
+  let dismissed = 0;
+  try { dismissed = +localStorage.getItem(ANNOUNCE_SEEN_KEY) || 0; } catch(e) {}
+  if(!announcement || !announcement.text || announcement.ts <= dismissed){ bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  bar.innerHTML = `<div class="announce-icon">📢</div>
+    <div class="announce-body"><b>Объявление от разработчика</b><span>${formatMessageText(announcement.text)}</span></div>
+    <button class="icon-btn" title="Скрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>`;
+  bar.querySelector('button').onclick = () => {
+    try { localStorage.setItem(ANNOUNCE_SEEN_KEY, String(announcement.ts)); } catch(e) {}
+    bar.style.display = 'none';
+  };
+}
+
+function setVerified(uid, on){
+  const name = ((usersCache[uid] || {}).username || '').toLowerCase();
+  if(!name || !isMeDev()) return;
+  db.ref('verified/' + name).set(on ? true : null).catch(() => alert('Не получилось — проверь правила базы'));
+}
+function setBanned(uid, on){
+  if(!isMeDev() || uid === myClientId) return;
+  const name = (usersCache[uid] || {}).username || '';
+  if(on && !confirm('Заблокировать ' + name + '? Его выкинет из аккаунта, войти он не сможет.')) return;
+  db.ref('banned/' + uid).set(on ? { by: myProfile.name, ts: Date.now() } : null)
+    .catch(() => alert('Не получилось — проверь правила базы'));
+}
+
+// Блок «Разработчик» в профиле человека
+function renderDevProfileActions(uid){
+  const box = document.getElementById('up-dev-actions');
+  if(!isMeDev() || !uid || uid === myClientId){ box.style.display = 'none'; return; }
+  box.style.display = 'block';
+  const name = (usersCache[uid] || {}).username || '';
+  const verified = isVerifiedName(name);
+  const banned = !!bannedCache[uid];
+  const vb = document.getElementById('up-verify-btn');
+  vb.textContent = verified ? 'Забрать галочку «проверенный»' : '✓ Выдать галочку «проверенный»';
+  vb.onclick = () => setVerified(uid, !verified);
+  const bb = document.getElementById('up-ban-btn');
+  bb.textContent = banned ? 'Разблокировать аккаунт' : '⛔ Заблокировать аккаунт';
+  bb.onclick = () => setBanned(uid, !banned);
+}
+
+// Сама панель: статистика, объявление, список всех пользователей
+function renderDevPanel(){
+  if(!isMeDev() || document.getElementById('dev-panel-modal').style.display !== 'flex') return;
+  const uids = Object.keys(usersCache || {});
+  document.getElementById('dev-stat-users').textContent = uids.length;
+  document.getElementById('dev-stat-online').textContent = uids.filter(u => usersCache[u] && usersCache[u].online).length;
+  document.getElementById('dev-stat-banned').textContent = Object.keys(bannedCache).length;
+  const q = document.getElementById('dev-users-search').value.trim().toLowerCase();
+  const list = document.getElementById('dev-users-list');
+  list.innerHTML = '';
+  uids
+    .filter(u => u !== myClientId && ((usersCache[u] || {}).username || '').toLowerCase().includes(q))
+    .sort((a, b) => ((usersCache[b] || {}).online ? 1 : 0) - ((usersCache[a] || {}).online ? 1 : 0)
+      || ((usersCache[a] || {}).username || '').localeCompare((usersCache[b] || {}).username || ''))
+    .slice(0, 100)
+    .forEach(uid => {
+      const row = personRow(uid, '', [], bannedCache[uid] ? '⛔ заблокирован' : null);
+      list.appendChild(row);
+    });
+  if(!list.children.length) list.innerHTML = '<div class="people-empty">Никого не нашлось</div>';
+}
+
+document.getElementById('dev-panel-btn').onclick = () => {
+  document.getElementById('settings-modal').style.display = 'none';
+  document.getElementById('dev-announce-input').value = (announcement && announcement.text) || '';
+  document.getElementById('dev-panel-modal').style.display = 'flex';
+  renderDevPanel();
+};
+document.getElementById('close-dev-panel-btn').onclick = () => {
+  document.getElementById('dev-panel-modal').style.display = 'none';
+};
+document.getElementById('dev-users-search').addEventListener('input', renderDevPanel);
+document.getElementById('dev-announce-send').onclick = () => {
+  const text = document.getElementById('dev-announce-input').value.trim();
+  if(!text || !isMeDev()) return;
+  db.ref('announcement').set({ text: text.slice(0, 300), ts: Date.now(), by: myProfile.name })
+    .then(() => alert('Объявление опубликовано — его увидят все'))
+    .catch(() => alert('Не получилось — проверь правила базы'));
+};
+document.getElementById('dev-announce-clear').onclick = () => {
+  if(!isMeDev() || !confirm('Убрать текущее объявление?')) return;
+  db.ref('announcement').remove();
+  document.getElementById('dev-announce-input').value = '';
+};
 
 // ===== Аудиозвонки (WebRTC + Firebase как "телефонная станция" для обмена
 // техническими данными о соединении). Публичные STUN-серверы Google помогают
@@ -4185,7 +4380,7 @@ auth.onAuthStateChanged(user => {
 function slchatTryCloseTopUI(){
   const closableIds = [
     'add-chat-modal', 'friends-modal', 'settings-modal', 'password-modal',
-    'group-info-modal', 'user-profile-modal', 'photo-viewer-overlay', 'story-viewer'
+    'group-info-modal', 'user-profile-modal', 'dev-panel-modal', 'photo-viewer-overlay', 'story-viewer'
   ];
   for(const id of closableIds){
     const el = document.getElementById(id);
