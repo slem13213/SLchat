@@ -1,0 +1,193 @@
+{
+  // Правила Realtime Database для SLchat.
+  // Разработчик (slem2) = UID XrJsvEYNq9fggrYrvnjUR8jhsZ92.
+  // Всё, чего здесь явно не разрешено, — запрещено.
+  "rules": {
+
+    // Профили: читать может любой вошедший, менять — только свой.
+    // Ник после регистрации менять нельзя, а занять ник slem2 может только разработчик.
+    "users": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && $uid === auth.uid",
+        "username": {
+          ".validate": "newData.isString() && ((data.exists() && newData.val() === data.val()) || (!data.exists() && (root.child('usernames/' + newData.val().toLowerCase()).val() === $uid || !root.child('usernames/' + newData.val().toLowerCase()).exists()))) && (newData.val().toLowerCase() !== 'slem2' || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')"
+        }
+      }
+    },
+
+    // Ник -> UID. Читать можно без входа (проверка «ник занят» при регистрации).
+    // Ник можно только занять для себя, отнять или переписать нельзя.
+    "usernames": {
+      ".read": true,
+      "$name": {
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+      }
+    },
+
+    "chats": {
+      "$chatId": {
+        // Удалить чат целиком может только создатель группы или разработчик
+        ".write": "auth != null && !newData.exists() && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+
+        "meta": {
+          ".read": "auth != null && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || ($chatId.beginsWith('dm_') && $chatId.contains(auth.uid)) || $chatId === 'admin_registration_log' || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+          // Создание чата: создатель — я, я в участниках; личный чат — только «свой» id.
+          // Служебный чат «Регистрации» создаётся системой.
+          ".write": "auth != null && !data.exists() && !root.child('banned/' + auth.uid).exists() && ((newData.child('createdBy').val() === auth.uid && newData.child('members/' + auth.uid).val() === true && (newData.child('type').val() === 'group' || ($chatId.beginsWith('dm_') && $chatId.contains(auth.uid)))) || ($chatId === 'admin_registration_log' && newData.child('createdBy').val() === 'system'))",
+
+          // Название и фото группы — создатель, админы, разработчик
+          "name": {
+            ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+          },
+          "avatar": {
+            ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')"
+          },
+          // Передать группу другому участнику может только создатель (или разработчик)
+          "createdBy": {
+            ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92') && newData.isString() && root.child('chats/' + $chatId + '/meta/members/' + newData.val()).exists()"
+          },
+          "members": {
+            "$uid": {
+              // Добавить — создатель/админ/разработчик.
+              // Убрать — сам себя (выход); создатель/разработчик — любого;
+              // админ — только обычного участника.
+              ".write": "auth != null && ((!data.exists() && !newData.exists()) || (!data.exists() && newData.val() === true && !root.child('banned/' + auth.uid).exists() && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')) || (data.exists() && !newData.exists() && ($uid === auth.uid || root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true && root.child('chats/' + $chatId + '/meta/createdBy').val() !== $uid && root.child('chats/' + $chatId + '/meta/admins/' + $uid).val() !== true))))"
+            }
+          },
+          "admins": {
+            "$uid": {
+              // Назначать/снимать админов — создатель или разработчик; снять с себя может каждый
+              ".write": "auth != null && ((!data.exists() && !newData.exists()) || root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || ($uid === auth.uid && !newData.exists()))",
+              ".validate": "newData.val() === true"
+            }
+          }
+        },
+
+        "messages": {
+          ".read": "auth != null && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+          "$msgId": {
+            // Новое — участник от своего имени (или служебное); в «Регистрации» — только служебное.
+            // Изменить — только автор. Удалить — автор, создатель/админ группы, разработчик.
+            ".write": "auth != null && !root.child('banned/' + auth.uid).exists() && ((!data.exists() && newData.exists() && ((root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && (newData.child('clientId').val() === auth.uid || newData.child('clientId').val() === 'system')) || ($chatId === 'admin_registration_log' && newData.child('clientId').val() === 'system'))) || (data.exists() && newData.exists() && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && data.child('clientId').val() === auth.uid && newData.child('clientId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('clientId').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('chats/' + $chatId + '/meta/type').val() === 'group' && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true)))))",
+            // Своё сообщение подписывается настоящим ником — подделать «slem2» нельзя
+            ".validate": "newData.child('clientId').val() === 'system' || newData.child('senderName').val() === root.child('users/' + auth.uid + '/username').val() || (!root.child('users/' + auth.uid + '/username').exists() && newData.child('senderName').val().toLowerCase() !== 'slem2')",
+            "reactions": {
+              "$uid": {
+                // Реакцию ставит каждый только свою
+                ".write": "auth != null && $uid === auth.uid && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()",
+                ".validate": "newData.isString() && newData.val().length <= 16"
+              }
+            }
+          }
+        },
+
+        "reads": {
+          ".read": "auth != null && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+          "$uid": {
+            ".write": "auth != null && $uid === auth.uid && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()"
+          }
+        }
+      }
+    },
+
+    // Список моих чатов. Свой — меняю как хочу. Чужой: добавить чат можно, только если
+    // человек уже в участниках и я тоже; убрать — создатель/админ группы или разработчик.
+    "userChats": {
+      "$uid": {
+        ".read": "auth != null && ($uid === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+        "$chatId": {
+          ".write": "auth != null && ($uid === auth.uid || (!data.exists() && !newData.exists()) || (newData.val() === true && !root.child('banned/' + auth.uid).exists() && root.child('chats/' + $chatId + '/meta/members/' + $uid).exists() && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || $chatId === 'admin_registration_log')) || (!newData.exists() && (auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || (root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true && root.child('chats/' + $chatId + '/meta/createdBy').val() !== $uid && root.child('chats/' + $chatId + '/meta/admins/' + $uid).val() !== true))))"
+        }
+      }
+    },
+
+    "pinnedChats": {
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid",
+        ".write": "auth != null && $uid === auth.uid"
+      }
+    },
+
+    // Дружба появляется только в ответ на заявку; удалить дружбу может любой из двоих
+    "friends": {
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid",
+        "$friendUid": {
+          ".write": "auth != null && (($uid === auth.uid && (!newData.exists() || root.child('friendRequests/' + $uid + '/' + $friendUid).exists())) || ($friendUid === auth.uid && (!newData.exists() || root.child('friendRequests/' + $friendUid + '/' + $uid).exists())))",
+          ".validate": "newData.val() === true"
+        }
+      }
+    },
+
+    // friendRequests/{кому}/{от кого}: отправляю/отменяю я сам, получатель может только удалить
+    "friendRequests": {
+      "$to": {
+        ".read": "auth != null && $to === auth.uid",
+        "$from": {
+          ".read": "auth != null && $from === auth.uid",
+          ".write": "auth != null && (($from === auth.uid && $to !== auth.uid && (!newData.exists() || !root.child('banned/' + auth.uid).exists())) || ($to === auth.uid && !newData.exists()))",
+          ".validate": "newData.child('username').val() === root.child('users/' + auth.uid + '/username').val()"
+        }
+      }
+    },
+
+    // sentRequests/{от кого}/{кому} — мои отправленные заявки
+    "sentRequests": {
+      "$from": {
+        ".read": "auth != null && $from === auth.uid",
+        "$to": {
+          ".write": "auth != null && ($from === auth.uid || ($to === auth.uid && !newData.exists()))"
+        }
+      }
+    },
+
+    "stories": {
+      ".read": "auth != null",
+      "$uid": {
+        ".write": "auth != null && ($uid === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92') && (!newData.exists() || !root.child('banned/' + auth.uid).exists())"
+      }
+    },
+
+    "typing": {
+      "$chatId": {
+        ".read": "auth != null && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()",
+        "$uid": {
+          ".write": "auth != null && $uid === auth.uid && (!newData.exists() || root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists())"
+        }
+      }
+    },
+
+    // Звонки — только участники чата
+    "calls": {
+      "$chatId": {
+        ".read": "auth != null && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()",
+        ".write": "auth != null && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()"
+      }
+    },
+    "groupCallSessions": {
+      "$chatId": {
+        ".read": "auth != null && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()",
+        ".write": "auth != null && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()"
+      }
+    },
+
+    // ===== Только разработчик =====
+    "verified": {
+      ".read": "auth != null",
+      ".write": "auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92'"
+    },
+    "banned": {
+      ".read": "auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92'",
+      ".write": "auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92'",
+      "$uid": {
+        ".read": "auth != null && $uid === auth.uid"
+      }
+    },
+    "announcement": {
+      ".read": "auth != null",
+      ".write": "auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92'"
+    }
+  }
+}
