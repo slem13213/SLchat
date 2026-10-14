@@ -238,6 +238,53 @@
   .dev-check{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:#4ea3f7;color:#fff;border-radius:50%;font-size:9px;vertical-align:middle;margin-left:4px;flex-shrink:0;}
   .dev-pill{display:inline-flex;align-items:center;gap:3px;background:var(--ig);color:#fff;font-size:11px;font-weight:700;padding:2px 8px 2px 6px;border-radius:10px;vertical-align:middle;margin-left:6px;}
 
+  /* ===== Друзья, профиль, группа ===== */
+  .modal .icon-btn{border-radius:50% !important;}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;margin:-6px -8px 10px 0;}
+  .sheet-head h2{margin:0 !important;}
+  .search-box{display:flex;align-items:center;gap:8px;background:var(--panel2);border-radius:12px;padding:0 6px 0 12px;margin-bottom:8px;border:1px solid transparent;}
+  .search-box:focus-within{border-color:var(--accent);}
+  .search-box .ic{width:17px;height:17px;color:var(--muted);}
+  .modal .search-box input{flex:1;min-width:0;background:none !important;border:none !important;padding:11px 0 !important;color:var(--text);outline:none;}
+  .form-error{color:var(--danger);font-size:12.5px;min-height:16px;margin-bottom:4px;}
+  .people-list{display:flex;flex-direction:column;gap:2px;margin-bottom:10px;}
+  .people-empty{font-size:13px;color:var(--muted);padding:14px 4px;text-align:center;line-height:1.5;}
+  .person{display:flex;align-items:center;gap:12px;padding:8px 6px;border-radius:12px;cursor:pointer;}
+  @media(hover:hover){.person:hover{background:var(--panel2);}}
+  .person .avatar{width:44px;height:44px;font-size:17px;}
+  .person-info{flex:1;min-width:0;}
+  .person-name{font-size:15px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .person-sub{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .person-sub.online{color:var(--accent);}
+  .person-actions{display:flex;gap:6px;flex-shrink:0;}
+  .role-badge{font-size:11px;font-weight:700;color:var(--accent);margin-left:6px;}
+  .role-badge.owner{background:var(--ig);-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .pill-btn{border:none;background:var(--panel2);color:var(--text);font-weight:600;font-size:13px !important;padding:8px 14px;border-radius:18px !important;cursor:pointer;white-space:nowrap;}
+  .pill-btn.primary{background:var(--accent);color:#fff;}
+  .pill-btn.done{color:var(--muted);}
+  .pill-btn.danger{color:var(--danger);}
+  .pill-btn:disabled{opacity:.6;cursor:default;}
+  .seg{display:flex;background:var(--panel2);border-radius:12px;padding:3px;margin:4px 0 10px;}
+  .seg-btn{flex:1;border:none;background:none;color:var(--muted);font-weight:600;font-size:13px !important;padding:8px 4px;border-radius:10px !important;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;}
+  .seg-btn.selected{background:var(--panel);color:var(--text);box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+  .seg .cnt{background:var(--danger);color:#fff;border-radius:9px;font-size:10.5px;padding:1px 6px;}
+  .seg .cnt:empty,.muted-cnt:empty{display:none;}
+  .muted-cnt{color:var(--muted);font-weight:500;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;}
+  .profile-hero{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px;margin-bottom:16px;}
+  .hero-avatar-wrap{position:relative;}
+  .big-avatar{width:96px !important;height:96px !important;font-size:38px !important;margin-bottom:8px;object-fit:cover;}
+  .hero-name{font-size:21px;font-weight:700;word-break:break-word;}
+  .hero-sub{font-size:13.5px;color:var(--muted);}
+  .hero-sub.online{color:var(--accent);}
+  .hero-actions{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:12px;}
+  .list-btn{display:block;width:100%;text-align:left;border:none;background:var(--panel2);color:var(--text);font-size:14.5px !important;font-weight:500;padding:12px 14px;margin-bottom:6px;cursor:pointer;}
+  .list-btn.danger,.danger-btn{color:var(--danger);}
+  .danger-btn{display:block;width:100%;border:none;background:var(--panel2);font-size:14.5px !important;font-weight:600;padding:12px;margin-top:8px;cursor:pointer;}
+  .sys-msg{align-self:center;background:rgba(0,0,0,0.3);color:#fff;font-size:12.5px;padding:4px 12px;border-radius:14px;margin:6px 0;max-width:85%;text-align:center;}
+  body[data-theme="light"] .sys-msg{background:rgba(255,255,255,0.8);color:#334;}
+  .msg-sender{cursor:pointer;}
+
   /* ===== Звонки ===== */
   .call-overlay{position:fixed;inset:0;background:rgba(5,8,14,0.82);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);z-index:20;display:none;align-items:center;justify-content:center;}
   .call-box{background:var(--panel);border:1px solid var(--line);border-radius:28px;padding:34px 26px 28px;width:310px;max-width:92vw;text-align:center;position:relative;box-shadow:var(--shadow);}
@@ -400,7 +447,7 @@
   <div id="chat-context-menu">
     <div class="ctx-item" id="ctx-pin-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-1 7 4 3v2H6v-2l4-3z"/></svg><span id="ctx-pin-label">Закрепить</span></div>
     <div class="ctx-item" id="ctx-read-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L7 17l-5-5"/><path d="M22 10l-7.5 7.5L13 16"/></svg>Отметить прочитанным</div>
-    <div class="ctx-item danger" id="ctx-delete-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Удалить чат</div>
+    <div class="ctx-item danger" id="ctx-delete-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg><span id="ctx-delete-label">Удалить чат</span></div>
   </div>
 
   <!-- Меню сообщения: реакции, ответить, копировать, изменить, удалить -->
@@ -444,21 +491,26 @@
     </div>
   </div>
 
-  <div id="friends-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10;align-items:center;justify-content:center;">
-    <div style="background:var(--panel);border-radius:14px;padding:20px;width:300px;max-width:90vw;max-height:80vh;overflow-y:auto;">
-      <h2 style="margin:0 0 14px;font-size:16px;">Друзья</h2>
-      <div style="display:flex;gap:6px;margin-bottom:8px;">
-        <input id="add-friend-input" placeholder="Логин пользователя" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
-        <button id="add-friend-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">+</button>
+  <div id="friends-modal" class="modal" style="display:none;">
+    <div>
+      <div class="sheet-head">
+        <h2>Друзья</h2>
+        <button id="close-friends-btn" class="icon-btn" title="Закрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
-      <div id="friends-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:6px;"></div>
-      <div id="friend-requests-section" style="display:none;">
-        <div class="settings-section-title">Заявки в друзья</div>
-        <div id="friend-requests-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;"></div>
+      <div class="search-box">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="add-friend-input" placeholder="Найти людей по нику" autocomplete="off" />
       </div>
-      <div class="settings-section-title">Мои друзья</div>
-      <div id="friends-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:6px;"></div>
-      <button id="close-friends-btn" style="width:100%;margin-top:10px;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
+      <div id="friends-error" class="form-error"></div>
+      <div id="people-search-results" class="people-list"></div>
+      <div id="friends-tabs" class="seg">
+        <button class="seg-btn selected" data-tab="friends">Друзья <span id="friends-count" class="muted-cnt"></span></button>
+        <button class="seg-btn" data-tab="incoming">Входящие <span id="incoming-count" class="cnt"></span></button>
+        <button class="seg-btn" data-tab="outgoing">Отправленные</button>
+      </div>
+      <div id="friends-list" class="people-list"></div>
+      <div id="friend-requests-list" class="people-list" style="display:none;"></div>
+      <div id="sent-requests-list" class="people-list" style="display:none;"></div>
     </div>
   </div>
 
@@ -537,30 +589,66 @@
     </div>
   </div>
 
-  <!-- Информация о группе: аватарка, список участников, добавление новых -->
-  <div id="group-info-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:12;align-items:center;justify-content:center;">
-    <div style="background:var(--panel);border-radius:14px;padding:20px;width:300px;max-width:90vw;max-height:80vh;overflow-y:auto;">
-      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
-        <div style="position:relative;flex-shrink:0;">
-          <img id="group-info-avatar-preview" class="avatar" style="width:56px;height:56px;object-fit:cover;display:none;cursor:pointer;" />
-          <div id="group-info-avatar-placeholder" class="avatar" style="width:56px;height:56px;cursor:pointer;font-size:22px;">👥</div>
+  <!-- Информация о группе: фото, участники с ролями, управление -->
+  <div id="group-info-modal" class="modal" style="display:none;z-index:12;">
+    <div>
+      <div class="sheet-head">
+        <span></span>
+        <button id="close-group-info-btn" class="icon-btn" title="Закрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="profile-hero">
+        <div class="hero-avatar-wrap">
+          <img id="group-info-avatar-preview" class="avatar big-avatar" style="display:none;" />
+          <div id="group-info-avatar-placeholder" class="avatar big-avatar">👥</div>
           <input id="group-info-avatar-input" type="file" accept="image/*" style="display:none;" />
         </div>
-        <div style="flex:1;min-width:0;">
-          <div id="group-info-name" style="font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-          <button id="group-info-avatar-btn" style="background:none;border:none;color:var(--accent);font-size:11px;cursor:pointer;padding:0;">Сменить фото группы</button>
+        <div id="group-info-name" class="hero-name"></div>
+        <div id="group-info-sub" class="hero-sub"></div>
+        <div class="hero-actions" id="group-admin-actions">
+          <button id="group-info-avatar-btn" class="pill-btn">Сменить фото</button>
+          <button id="group-rename-btn" class="pill-btn">Переименовать</button>
         </div>
       </div>
-      <div class="settings-section-title">Участники</div>
-      <div id="group-members-info-list" style="margin-bottom:14px;display:flex;flex-direction:column;gap:8px;"></div>
-      <div class="settings-section-title">Добавить участника</div>
-      <div style="display:flex;gap:6px;margin-bottom:6px;">
-        <input id="group-add-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
-        <button id="group-add-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
+      <div id="group-add-section">
+        <div class="settings-section-title">Добавить участника</div>
+        <div class="search-box">
+          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <input id="group-add-member-input" placeholder="Ник участника" autocomplete="off" />
+          <button id="group-add-member-btn" class="pill-btn primary">Добавить</button>
+        </div>
+        <div id="group-info-friends-quickpick" class="chips"></div>
       </div>
-      <div id="group-info-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:6px;"></div>
-      <div id="group-info-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-bottom:10px;"></div>
-      <button id="close-group-info-btn" style="width:100%;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Готово</button>
+      <div id="group-info-error" class="form-error"></div>
+      <div class="settings-section-title">Участники</div>
+      <div id="group-members-info-list" class="people-list"></div>
+      <button id="group-leave-btn" class="danger-btn">Выйти из группы</button>
+      <button id="group-delete-btn" class="danger-btn">Удалить группу для всех</button>
+    </div>
+  </div>
+
+  <!-- Профиль другого человека -->
+  <div id="user-profile-modal" class="modal" style="display:none;z-index:13;">
+    <div>
+      <div class="sheet-head">
+        <span></span>
+        <button id="close-user-profile-btn" class="icon-btn" title="Закрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+      </div>
+      <div class="profile-hero">
+        <div id="up-avatar" class="avatar big-avatar"></div>
+        <div id="up-name" class="hero-name"></div>
+        <div id="up-status" class="hero-sub"></div>
+        <div class="hero-actions">
+          <button id="up-msg-btn" class="pill-btn primary">Написать</button>
+          <button id="up-call-btn" class="pill-btn">Позвонить</button>
+          <button id="up-friend-btn" class="pill-btn"></button>
+        </div>
+      </div>
+      <div id="up-group-admin">
+        <button id="up-make-admin-btn" class="list-btn"></button>
+        <button id="up-kick-btn" class="list-btn danger">Удалить из группы</button>
+      </div>
+      <div class="settings-section-title" id="up-common-title">Общие группы</div>
+      <div id="up-common-groups" class="people-list"></div>
     </div>
   </div>
 
@@ -875,6 +963,9 @@ let hasAutoOpened = false;
 function syncChatMembership(ids){
   const idSet = new Set(ids);
   chats = chats.filter(c => idSet.has(c.id));
+  // Меня удалили из группы (или группу удалили) — закрываем её, если была открыта
+  if(activeChatId && !idSet.has(activeChatId)) closeChat();
+  if(groupInfoChatId && !idSet.has(groupInfoChatId)){ document.getElementById('group-info-modal').style.display = 'none'; groupInfoChatId = null; }
   ids.forEach(id => {
     if(!chatMetaListenersStarted[id]){
       chatMetaListenersStarted[id] = true;
@@ -1052,48 +1143,84 @@ function renderChatHeaderStatus(chat){
 let friendsCache = {};        // uid -> true
 let friendRequestsCache = {}; // fromUid -> { username, ts }
 
+let sentRequestsCache = {};   // toUid -> { username, ts } — мои отправленные заявки
+let friendsTab = 'friends';   // 'friends' | 'incoming' | 'outgoing'
+
 function watchFriends(){
   db.ref('friends/' + myClientId).on('value', snap => {
     friendsCache = snap.val() || {};
     renderFriendsModal();
     renderFriendsQuickpicks();
+    refreshUserProfileIfOpen();
   });
   db.ref('friendRequests/' + myClientId).on('value', snap => {
     friendRequestsCache = snap.val() || {};
     renderFriendsModal();
+    refreshUserProfileIfOpen();
     const count = Object.keys(friendRequestsCache).length;
     const badge = document.getElementById('friends-req-badge');
     badge.style.display = count > 0 ? 'flex' : 'none';
     badge.textContent = count > 9 ? '9+' : count;
   });
+  db.ref('sentRequests/' + myClientId).on('value', snap => {
+    sentRequestsCache = snap.val() || {};
+    renderFriendsModal();
+    refreshUserProfileIfOpen();
+  }, () => {});
 }
 
-// Отправить заявку в друзья по логину
+// Кем мне приходится человек: я сам / друг / он прислал заявку / я отправил / никто
+function friendState(uid){
+  if(uid === myClientId) return 'self';
+  if(friendsCache[uid]) return 'friend';
+  if(friendRequestsCache[uid]) return 'incoming';
+  if(sentRequestsCache[uid]) return 'outgoing';
+  return 'none';
+}
+
+// Отправить заявку по логину (оставлено для совместимости со старым кодом)
 function sendFriendRequest(username, onError){
-  const uname = username.trim().toLowerCase();
+  const uname = (username || '').trim().toLowerCase();
   if(!uname){ onError('Введи логин'); return; }
   db.ref('usernames/' + uname).once('value').then(snap => {
     if(!snap.exists()){ onError('Пользователь с таким логином не найден'); return; }
-    const uid = snap.val();
-    if(uid === myClientId){ onError('Это твой собственный логин'); return; }
-    if(friendsCache[uid]){ onError('Вы уже друзья'); return; }
-    db.ref('friendRequests/' + uid + '/' + myClientId).once('value').then(existing => {
-      if(existing.exists()){ onError('Заявка уже отправлена'); return; }
-      db.ref('friendRequests/' + uid + '/' + myClientId).set({ username: myProfile.name, ts: Date.now() }).then(() => {
-        document.getElementById('add-friend-input').value = '';
-      });
-    });
+    sendFriendRequestTo(snap.val(), onError);
   });
+}
+
+function sendFriendRequestTo(uid, onError){
+  onError = onError || (msg => alert(msg));
+  const state = friendState(uid);
+  if(state === 'self'){ onError('Это ты сам 🙂'); return; }
+  if(state === 'friend'){ onError('Вы уже друзья'); return; }
+  if(state === 'outgoing'){ onError('Заявка уже отправлена'); return; }
+  // Если он уже звал меня в друзья — просто принимаем его заявку
+  if(state === 'incoming'){ acceptFriendRequest(uid); return; }
+  const ts = Date.now();
+  const theirName = (usersCache[uid] || {}).username || '';
+  db.ref('friendRequests/' + uid + '/' + myClientId).set({ username: myProfile.name, ts })
+    .then(() => db.ref('sentRequests/' + myClientId + '/' + uid).set({ username: theirName, ts }).catch(() => {}))
+    .catch(() => onError('Не получилось отправить заявку'));
 }
 
 function acceptFriendRequest(fromUid){
   db.ref('friends/' + myClientId + '/' + fromUid).set(true);
   db.ref('friends/' + fromUid + '/' + myClientId).set(true);
   db.ref('friendRequests/' + myClientId + '/' + fromUid).remove();
+  db.ref('sentRequests/' + fromUid + '/' + myClientId).remove().catch(() => {});
+  // На случай встречных заявок — убираем и мою
+  db.ref('friendRequests/' + fromUid + '/' + myClientId).remove().catch(() => {});
+  db.ref('sentRequests/' + myClientId + '/' + fromUid).remove().catch(() => {});
 }
 
 function declineFriendRequest(fromUid){
   db.ref('friendRequests/' + myClientId + '/' + fromUid).remove();
+  db.ref('sentRequests/' + fromUid + '/' + myClientId).remove().catch(() => {});
+}
+
+function cancelFriendRequest(toUid){
+  db.ref('friendRequests/' + toUid + '/' + myClientId).remove().catch(() => {});
+  db.ref('sentRequests/' + myClientId + '/' + toUid).remove().catch(() => {});
 }
 
 function removeFriend(uid){
@@ -1101,66 +1228,257 @@ function removeFriend(uid){
   db.ref('friends/' + uid + '/' + myClientId).remove();
 }
 
+// Статус под именем человека: в сети / был(а) ... (с учётом его приватности)
+function userStatusText(uid){
+  const u = usersCache[uid] || {};
+  if(!canSeeOnline(uid)) return { text: 'был(а) недавно', online: false };
+  if(u.online) return { text: 'в сети', online: true };
+  return { text: formatLastSeen(u.lastSeen), online: false };
+}
+
+function avatarHtmlFor(name, avatar){
+  return avatar
+    ? `<img src="${avatar}" class="avatar" style="object-fit:cover;" />`
+    : `<div class="avatar">${escapeHtml(initials(name || '?'))}</div>`;
+}
+
+// Кнопка действия «дружба» для строки человека
+function friendActionButton(uid){
+  const state = friendState(uid);
+  const b = document.createElement('button');
+  b.className = 'pill-btn';
+  if(state === 'self') return null;
+  if(state === 'friend'){
+    b.textContent = 'Написать';
+    b.onclick = (e) => { e.stopPropagation(); writeToUser(uid); };
+  } else if(state === 'incoming'){
+    b.textContent = 'Принять';
+    b.classList.add('primary');
+    b.onclick = (e) => { e.stopPropagation(); acceptFriendRequest(uid); };
+  } else if(state === 'outgoing'){
+    b.textContent = 'Отменить';
+    b.classList.add('done');
+    b.onclick = (e) => { e.stopPropagation(); cancelFriendRequest(uid); };
+  } else {
+    b.textContent = 'Добавить';
+    b.classList.add('primary');
+    b.onclick = (e) => {
+      e.stopPropagation();
+      sendFriendRequestTo(uid, msg => { document.getElementById('friends-error').textContent = msg; });
+    };
+  }
+  return b;
+}
+
+// Одна строка «человек»: аватар, имя, статус, кнопки. Клик — открыть профиль
+function personRow(uid, fallbackName, buttons, subOverride){
+  const u = usersCache[uid] || {};
+  const name = u.username || fallbackName || '?';
+  const row = document.createElement('div');
+  row.className = 'person';
+  const st = subOverride ? { text: subOverride, online: false } : userStatusText(uid);
+  row.innerHTML = `${avatarHtmlFor(name, u.avatar)}
+    <div class="person-info">
+      <div class="person-name">${escapeHtml(name)}${devCheckHtml(name)}</div>
+      <div class="person-sub${st.online ? ' online' : ''}">${escapeHtml(st.text)}</div>
+    </div>
+    <div class="person-actions"></div>`;
+  const actions = row.querySelector('.person-actions');
+  (buttons || []).forEach(b => { if(b) actions.appendChild(b); });
+  row.onclick = () => openUserProfile(uid);
+  return row;
+}
+
 function renderFriendsModal(){
-  const reqSection = document.getElementById('friend-requests-section');
+  const list = document.getElementById('friends-list');
+  if(!list) return; // модалка ещё не загружена в DOM
   const reqList = document.getElementById('friend-requests-list');
-  if(!reqList) return; // модалка ещё не загружена в DOM
+  const sentList = document.getElementById('sent-requests-list');
+
+  const friendUids = Object.keys(friendsCache);
   const reqUids = Object.keys(friendRequestsCache);
-  reqSection.style.display = reqUids.length > 0 ? 'block' : 'none';
+  const sentUids = Object.keys(sentRequestsCache);
+  document.getElementById('friends-count').textContent = friendUids.length || '';
+  document.getElementById('incoming-count').textContent = reqUids.length || '';
+  document.querySelectorAll('#friends-tabs .seg-btn').forEach(b => b.classList.toggle('selected', b.dataset.tab === friendsTab));
+  list.style.display = friendsTab === 'friends' ? 'flex' : 'none';
+  reqList.style.display = friendsTab === 'incoming' ? 'flex' : 'none';
+  sentList.style.display = friendsTab === 'outgoing' ? 'flex' : 'none';
+
+  // Друзья: сначала те, кто в сети
+  list.innerHTML = '';
+  friendUids.sort((a, b) => (userStatusText(b).online ? 1 : 0) - (userStatusText(a).online ? 1 : 0));
+  friendUids.forEach(uid => list.appendChild(personRow(uid, '', [friendActionButton(uid)])));
+  if(!friendUids.length) list.innerHTML = '<div class="people-empty">Пока нет друзей.<br>Найди человека по нику в поиске выше 👆</div>';
+
   reqList.innerHTML = '';
   reqUids.forEach(uid => {
-    const req = friendRequestsCache[uid];
-    const row = document.createElement('div');
-    row.className = 'friend-row';
-    const u = usersCache[uid] || {};
-    const avatarHtml = u.avatar
-      ? `<img src="${u.avatar}" class="avatar" style="object-fit:cover;" />`
-      : `<div class="avatar">${initials(req.username || '?')}</div>`;
-    row.innerHTML = `${avatarHtml}<div class="friend-row-name">${req.username}${devCheckHtml(req.username)}</div>`;
-    const acceptBtn = document.createElement('button');
-    acceptBtn.className = 'friend-row-btn accept';
-    acceptBtn.textContent = 'Принять';
-    acceptBtn.onclick = () => acceptFriendRequest(uid);
-    const declineBtn = document.createElement('button');
-    declineBtn.className = 'friend-row-btn decline';
-    declineBtn.textContent = '✕';
-    declineBtn.onclick = () => declineFriendRequest(uid);
-    row.appendChild(acceptBtn);
-    row.appendChild(declineBtn);
-    reqList.appendChild(row);
+    const req = friendRequestsCache[uid] || {};
+    const accept = document.createElement('button');
+    accept.className = 'pill-btn primary'; accept.textContent = 'Принять';
+    accept.onclick = (e) => { e.stopPropagation(); acceptFriendRequest(uid); };
+    const decline = document.createElement('button');
+    decline.className = 'pill-btn danger'; decline.textContent = '✕'; decline.title = 'Отклонить';
+    decline.onclick = (e) => { e.stopPropagation(); declineFriendRequest(uid); };
+    reqList.appendChild(personRow(uid, req.username, [accept, decline], 'хочет добавить тебя в друзья'));
   });
+  if(!reqUids.length) reqList.innerHTML = '<div class="people-empty">Новых заявок нет</div>';
 
-  const list = document.getElementById('friends-list');
-  const friendUids = Object.keys(friendsCache);
-  list.innerHTML = '';
-  if(friendUids.length === 0){
-    list.innerHTML = '<div style="font-size:12px;color:var(--muted);">Пока нет друзей — добавь кого-нибудь по логину выше</div>';
-    return;
-  }
-  friendUids.forEach(uid => {
-    const u = usersCache[uid] || {};
+  sentList.innerHTML = '';
+  sentUids.forEach(uid => {
+    const req = sentRequestsCache[uid] || {};
+    const cancel = document.createElement('button');
+    cancel.className = 'pill-btn done'; cancel.textContent = 'Отменить';
+    cancel.onclick = (e) => { e.stopPropagation(); cancelFriendRequest(uid); };
+    sentList.appendChild(personRow(uid, req.username, [cancel], 'заявка отправлена'));
+  });
+  if(!sentUids.length) sentList.innerHTML = '<div class="people-empty">Ты никому не отправлял заявок</div>';
+
+  renderPeopleSearch();
+}
+
+// Живой поиск людей по нику (по началу ника)
+let peopleSearchResults = [];
+let peopleSearchTimer = null;
+let peopleSearchSeq = 0;
+function runPeopleSearch(q){
+  q = (q || '').trim().toLowerCase();
+  document.getElementById('friends-error').textContent = '';
+  if(!q){ peopleSearchResults = []; renderPeopleSearch(); return; }
+  const seq = ++peopleSearchSeq;
+  db.ref('usernames').orderByKey().startAt(q).endAt(q + '').limitToFirst(10).once('value').then(snap => {
+    if(seq !== peopleSearchSeq) return; // уже ищем что-то новее
+    const res = [];
+    snap.forEach(child => { if(child.val() !== myClientId) res.push({ uid: child.val(), username: child.key }); });
+    peopleSearchResults = res;
+    renderPeopleSearch();
+    if(!res.length) document.getElementById('friends-error').textContent = 'Никого не нашлось';
+  }).catch(() => { document.getElementById('friends-error').textContent = 'Поиск не удался'; });
+}
+function renderPeopleSearch(){
+  const box = document.getElementById('people-search-results');
+  if(!box) return;
+  box.innerHTML = '';
+  peopleSearchResults.forEach(r => box.appendChild(personRow(r.uid, r.username, [friendActionButton(r.uid)])));
+}
+
+// Написать человеку: если личный чат уже есть — открываем, иначе создаём
+function writeToUser(uid){
+  closeAllPeopleModals();
+  const id = privateChatId(myClientId, uid);
+  if(chats.find(c => c.id === id && c.meta)){ openChat(id); return; }
+  const u = usersCache[uid] || {};
+  if(u.username) startPrivateChat(u.username, msg => alert(msg));
+}
+
+function closeAllPeopleModals(){
+  ['friends-modal', 'user-profile-modal', 'group-info-modal'].forEach(id => {
+    document.getElementById(id).style.display = 'none';
+  });
+  profileUid = null;
+  groupInfoChatId = null;
+}
+
+// ===== Профиль другого человека =====
+let profileUid = null;
+let profileGroupId = null; // если открыли из группы — показываем действия админа
+function openUserProfile(uid, fromGroupId){
+  if(!uid || uid === 'system') return;
+  if(uid === myClientId){ document.getElementById('settings-btn').click(); return; }
+  profileUid = uid;
+  profileGroupId = fromGroupId || null;
+  renderUserProfile();
+  document.getElementById('user-profile-modal').style.display = 'flex';
+}
+function refreshUserProfileIfOpen(){ if(profileUid) renderUserProfile(); }
+
+function renderUserProfile(){
+  const uid = profileUid;
+  if(!uid) return;
+  const u = usersCache[uid] || {};
+  const name = u.username || '?';
+  const av = document.getElementById('up-avatar');
+  if(u.avatar) av.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
+  else av.textContent = initials(name);
+  document.getElementById('up-name').innerHTML = escapeHtml(name) + devPillHtml(name);
+  const st = userStatusText(uid);
+  const stEl = document.getElementById('up-status');
+  stEl.textContent = '@' + name.toLowerCase() + ' · ' + st.text;
+  stEl.classList.toggle('online', st.online);
+
+  const dmId = privateChatId(myClientId, uid);
+  const hasDm = !!chats.find(c => c.id === dmId && c.meta);
+  document.getElementById('up-call-btn').style.display = hasDm ? '' : 'none';
+
+  const fb = document.getElementById('up-friend-btn');
+  const state = friendState(uid);
+  fb.className = 'pill-btn';
+  if(state === 'friend'){ fb.textContent = '✓ В друзьях'; fb.classList.add('done'); }
+  else if(state === 'incoming'){ fb.textContent = 'Принять заявку'; fb.classList.add('primary'); }
+  else if(state === 'outgoing'){ fb.textContent = 'Заявка отправлена'; fb.classList.add('done'); }
+  else { fb.textContent = '+ В друзья'; }
+
+  // Действия админа, если профиль открыт из группы
+  const adminBox = document.getElementById('up-group-admin');
+  const gchat = profileGroupId && chats.find(c => c.id === profileGroupId);
+  const gmeta = gchat && gchat.meta;
+  const inGroup = gmeta && gmeta.members && gmeta.members[uid];
+  const canAdminToggle = inGroup && groupRole(gmeta, myClientId) === 'owner';
+  const canKickHim = inGroup && canKick(gmeta, uid);
+  adminBox.style.display = (canAdminToggle || canKickHim) ? 'block' : 'none';
+  const adminBtn = document.getElementById('up-make-admin-btn');
+  adminBtn.style.display = canAdminToggle ? 'block' : 'none';
+  if(canAdminToggle) adminBtn.textContent = groupRole(gmeta, uid) === 'admin' ? 'Снять права админа' : '⭐ Сделать админом';
+  document.getElementById('up-kick-btn').style.display = canKickHim ? 'block' : 'none';
+
+  // Общие группы
+  const common = chats.filter(c => c.meta && c.meta.type === 'group' && c.meta.members && c.meta.members[uid] && c.meta.members[myClientId]);
+  document.getElementById('up-common-title').style.display = common.length ? 'block' : 'none';
+  const box = document.getElementById('up-common-groups');
+  box.innerHTML = '';
+  common.forEach(c => {
     const row = document.createElement('div');
-    row.className = 'friend-row';
-    const avatarHtml = u.avatar
-      ? `<img src="${u.avatar}" class="avatar" style="object-fit:cover;" />`
-      : `<div class="avatar">${initials(u.username || '?')}</div>`;
-    row.innerHTML = `${avatarHtml}<div class="friend-row-name">${u.username || '?'}${devCheckHtml(u.username)}</div>`;
-    const msgBtn = document.createElement('button');
-    msgBtn.className = 'friend-row-btn';
-    msgBtn.textContent = 'Написать';
-    msgBtn.onclick = () => {
-      document.getElementById('friends-modal').style.display = 'none';
-      startPrivateChat(u.username, () => {});
-    };
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'friend-row-btn remove';
-    removeBtn.textContent = '✕';
-    removeBtn.onclick = () => removeFriend(uid);
-    row.appendChild(msgBtn);
-    row.appendChild(removeBtn);
-    list.appendChild(row);
+    row.className = 'person';
+    row.innerHTML = `${c.avatar ? `<img src="${c.avatar}" class="avatar" style="object-fit:cover;" />` : '<div class="avatar">👥</div>'}
+      <div class="person-info"><div class="person-name">${escapeHtml(c.name)}</div>
+      <div class="person-sub">${pluralMembers(Object.keys(c.meta.members || {}).length)}</div></div>`;
+    row.onclick = () => { closeAllPeopleModals(); openChat(c.id); };
+    box.appendChild(row);
   });
 }
+
+document.getElementById('close-user-profile-btn').onclick = () => {
+  document.getElementById('user-profile-modal').style.display = 'none';
+  profileUid = null;
+};
+document.getElementById('up-msg-btn').onclick = () => { if(profileUid) writeToUser(profileUid); };
+document.getElementById('up-call-btn').onclick = () => {
+  if(!profileUid) return;
+  const id = privateChatId(myClientId, profileUid);
+  closeAllPeopleModals();
+  openChat(id);
+  startCall(id, false);
+};
+document.getElementById('up-friend-btn').onclick = () => {
+  const uid = profileUid;
+  if(!uid) return;
+  const state = friendState(uid);
+  const name = (usersCache[uid] || {}).username || '';
+  if(state === 'friend'){ if(confirm('Удалить ' + name + ' из друзей?')) removeFriend(uid); }
+  else if(state === 'incoming') acceptFriendRequest(uid);
+  else if(state === 'outgoing'){ if(confirm('Отменить заявку в друзья?')) cancelFriendRequest(uid); }
+  else sendFriendRequestTo(uid);
+};
+document.getElementById('up-make-admin-btn').onclick = () => {
+  const chat = chats.find(c => c.id === profileGroupId);
+  if(!chat || !profileUid) return;
+  setGroupAdmin(chat, profileUid, groupRole(chat.meta, profileUid) !== 'admin');
+};
+document.getElementById('up-kick-btn').onclick = () => {
+  const chat = chats.find(c => c.id === profileGroupId);
+  if(!chat || !profileUid) return;
+  kickFromGroup(chat, profileUid);
+};
 
 // Быстрый выбор друзей при создании личного/группового чата и при
 // добавлении участника в уже существующую группу
@@ -1310,6 +1628,7 @@ function createGroupChat(name, memberList, onError){
     const writes = Object.keys(members).map(uid => db.ref('userChats/' + uid + '/' + id).set(true));
     return Promise.all(writes);
   }).then(() => {
+    postSystemMessage(id, myProfile.name + ' создал(а) группу «' + name + '»');
     document.getElementById('add-chat-modal').style.display = 'none';
   });
 }
@@ -1390,7 +1709,7 @@ function listenToChat(chat){
     // Показываем уведомление, если это НЕ первая загрузка, сообщение новое,
     // не наше собственное, и мы сейчас реально не смотрим в этот чат
     // (чат не открыт, либо вкладка вообще свёрнута/неактивна)
-    if(!firstLoad && newLast && newLast !== prevLast && newLast.clientId !== myClientId && (activeChatId !== chat.id || document.hidden)){
+    if(!firstLoad && newLast && newLast !== prevLast && newLast.clientId !== myClientId && !newLast.system && (activeChatId !== chat.id || document.hidden)){
       playNotifSound();
       if(notifPermission === 'granted'){
         try {
@@ -1592,7 +1911,9 @@ function wireMessageBubble(div, m, chat){
   });
   const quote = div.querySelector('.reply-quote');
   if(quote) quote.onclick = (e) => { e.stopPropagation(); scrollToMessage(quote.dataset.key); };
-  const isControl = (t) => t.closest && t.closest('button, input, a, video, .msg-photo, .reply-quote');
+  const sender = div.querySelector('.msg-sender');
+  if(sender) sender.onclick = (e) => { e.stopPropagation(); openUserProfile(m.clientId, chat.id); };
+  const isControl = (t) => t.closest && t.closest('button, input, a, video, .msg-photo, .reply-quote, .msg-sender');
 
   div.addEventListener('click', (e) => {
     if(isControl(e.target)) return;
@@ -1774,7 +2095,7 @@ function renderChatList(){
     const pinIconHtml = isPinned && !unread ? '<div class="chat-pin-icon">📌</div>' : '';
     let lastHtml = '';
     if(last){
-      const who = last.clientId === myClientId ? 'Вы' : (isGroup && last.senderName ? last.senderName : '');
+      const who = last.system ? '' : last.clientId === myClientId ? 'Вы' : (isGroup && last.senderName ? last.senderName : '');
       lastHtml = (who ? `<span class="who">${escapeHtml(who)}: </span>` : '') + escapeHtml(messagePreviewText(last));
     } else {
       lastHtml = isGroup ? 'Группа создана' : 'Напишите первое сообщение';
@@ -1788,7 +2109,7 @@ function renderChatList(){
     div.innerHTML = `
       ${avatarHtml}
       <div class="chat-meta">
-        <div class="chat-row"><div class="chat-name">${chat.name}${nameDevBadge}</div>${tickHtml}<span class="chat-time">${last ? shortMsgTime(last) : ''}</span></div>
+        <div class="chat-row"><div class="chat-name">${escapeHtml(chat.name)}${nameDevBadge}</div>${tickHtml}<span class="chat-time">${last ? shortMsgTime(last) : ''}</span></div>
         <div class="chat-row"><div class="chat-last">${lastHtml}</div>${badgeHtml}${pinIconHtml}</div>
       </div>`;
     div.onclick = () => openChat(chat.id);
@@ -1835,6 +2156,8 @@ function showChatContextMenu(chatId, x, y){
   const overlay = document.getElementById('chat-context-overlay');
   const isPinned = !!pinnedChatIds[chatId];
   document.getElementById('ctx-pin-label').textContent = isPinned ? 'Открепить' : 'Закрепить';
+  const ctxChat = chats.find(c => c.id === chatId);
+  document.getElementById('ctx-delete-label').textContent = (ctxChat && ctxChat.meta && ctxChat.meta.type === 'group' && chatId !== ADMIN_LOG_CHAT_ID) ? 'Выйти из группы' : 'Удалить чат';
   menu.classList.add('open');
   overlay.classList.add('open');
   // Ставим меню так, чтобы оно не вылезало за край экрана
@@ -1864,6 +2187,8 @@ function confirmDeleteChat(){
   const chatId = contextMenuChatId;
   closeChatContextMenu();
   const chat = chats.find(c => c.id === chatId);
+  // Из группы не «удаляют» — из неё выходят (иначе человек остаётся участником)
+  if(chat && chat.meta && chat.meta.type === 'group' && chatId !== ADMIN_LOG_CHAT_ID){ leaveGroup(chat); return; }
   const name = chat ? chat.name : 'этот чат';
   if(!confirm('Удалить чат «' + name + '» из списка? Переписка у собеседника не удалится.')) return;
   // "Удаление" — это удаление только своего личного индекса чата (как и в
@@ -1878,7 +2203,7 @@ function confirmDeleteChat(){
 
 function updateChatHeader(chat){
   const isGroup = chat.meta && chat.meta.type === 'group';
-  document.getElementById('chat-header-name').innerHTML = chat.name + (!isGroup ? devPillHtml(chat.name) : '');
+  document.getElementById('chat-header-name').innerHTML = escapeHtml(chat.name) + (!isGroup ? devPillHtml(chat.name) : '');
   const headerAvatar = document.getElementById('chat-header-avatar');
   const headerFallback = document.getElementById('chat-header-avatar-fallback');
   if(chat.avatar){
@@ -1894,15 +2219,18 @@ function updateChatHeader(chat){
   const canCall = chat.meta && (chat.meta.type === 'dm' || chat.meta.type === 'group');
   callBtn.style.display = canCall ? 'block' : 'none';
   videoCallBtn.style.display = canCall ? 'block' : 'none';
-  const clickable = isGroup ? 'pointer' : 'default';
+  const clickable = 'pointer';
   document.getElementById('chat-header-avatar-wrap').style.cursor = clickable;
   document.getElementById('chat-header-name').style.cursor = clickable;
   renderChatHeaderStatus(chat);
 }
 
+// Клик по шапке чата: в группе — информация о группе, в личке — профиль собеседника
 function openGroupInfoIfApplicable(){
   const chat = chats.find(c => c.id === activeChatId);
-  if(chat && chat.meta && chat.meta.type === 'group') openGroupInfo(chat.id);
+  if(!chat || !chat.meta) return;
+  if(chat.meta.type === 'group'){ if(chat.id !== ADMIN_LOG_CHAT_ID) openGroupInfo(chat.id); }
+  else openUserProfile(otherMemberUid(chat.meta));
 }
 
 function markChatRead(chatId, ts){
@@ -1960,6 +2288,14 @@ function renderMessages(){
       sep.textContent = dayLabel(m.ts);
       box.appendChild(sep);
       prevDay = day;
+    }
+    if(m.system){
+      // Служебное: «Аня добавила Макса», «Макс покинул группу»
+      const sys = document.createElement('div');
+      sys.className = 'sys-msg';
+      sys.textContent = m.text || '';
+      box.appendChild(sys);
+      return;
     }
     const next = chat.messages[i + 1];
     const grpEnd = !next || next.clientId !== m.clientId || (next.ts && new Date(next.ts).toDateString() !== day);
@@ -2432,7 +2768,7 @@ function renderStoriesBar(){
     div.className = 'story-item';
     div.innerHTML = `
       <div class="story-ring ${seen ? 'seen' : ''}">${avatarHtml}</div>
-      <div class="story-label">${s.username || '?'}</div>`;
+      <div class="story-label">${escapeHtml(s.username || '?')}</div>`;
     div.onclick = () => openStoryViewer(uid);
     bar.appendChild(div);
   });
@@ -2670,7 +3006,7 @@ function renderGroupMembers(){
   groupMembers.forEach((m, i) => {
     const chip = document.createElement('div');
     chip.className = 'member-chip';
-    chip.innerHTML = `${m.username} <button data-i="${i}">✕</button>`;
+    chip.innerHTML = `${escapeHtml(m.username)} <button data-i="${i}">✕</button>`;
     chip.querySelector('button').onclick = () => {
       groupMembers.splice(i, 1);
       renderGroupMembers();
@@ -2694,18 +3030,23 @@ document.getElementById('add-chat-btn').onclick = () => {
 document.getElementById('friends-btn').onclick = () => {
   document.getElementById('add-friend-input').value = '';
   document.getElementById('friends-error').textContent = '';
+  peopleSearchResults = [];
+  // Если есть новые заявки — сразу показываем их
+  friendsTab = Object.keys(friendRequestsCache).length ? 'incoming' : 'friends';
   renderFriendsModal();
   document.getElementById('friends-modal').style.display = 'flex';
 };
 document.getElementById('close-friends-btn').onclick = () => {
   document.getElementById('friends-modal').style.display = 'none';
 };
-document.getElementById('add-friend-btn').onclick = () => {
-  const errorEl = document.getElementById('friends-error');
-  sendFriendRequest(document.getElementById('add-friend-input').value, msg => { errorEl.textContent = msg; });
-};
-document.getElementById('add-friend-input').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('add-friend-btn').click();
+document.getElementById('add-friend-input').addEventListener('input', e => {
+  clearTimeout(peopleSearchTimer);
+  const q = e.target.value;
+  peopleSearchTimer = setTimeout(() => runPeopleSearch(q), 250);
+});
+document.querySelectorAll('#friends-tabs .seg-btn').forEach(b => b.onclick = () => {
+  friendsTab = b.dataset.tab;
+  renderFriendsModal();
 });
 document.getElementById('cancel-chat-btn').onclick = () => {
   document.getElementById('add-chat-modal').style.display = 'none';
@@ -2758,36 +3099,161 @@ document.getElementById('chat-header-name').onclick = openGroupInfoIfApplicable;
 // в любой момент (не только при создании группы) =====
 let groupInfoChatId = null;
 
+// ===== Роли в группе =====
+// Создатель (meta.createdBy) — может всё: выгонять кого угодно, назначать
+// админов, переименовывать и удалять группу.
+// Админ (meta.admins/{uid}) — может добавлять людей, менять фото/название
+// и выгонять обычных участников.
+// Участник — может только писать и выйти из группы.
+function groupRole(meta, uid){
+  if(!meta || !uid) return 'member';
+  if(meta.createdBy === uid) return 'owner';
+  if(meta.admins && meta.admins[uid]) return 'admin';
+  return 'member';
+}
+function canManageGroup(meta){
+  const r = groupRole(meta, myClientId);
+  return r === 'owner' || r === 'admin';
+}
+function canKick(meta, targetUid){
+  if(!meta || targetUid === myClientId) return false;
+  const me = groupRole(meta, myClientId), them = groupRole(meta, targetUid);
+  if(me === 'owner') return true;
+  if(me === 'admin') return them === 'member';
+  return false;
+}
+function userName(uid){ return (usersCache[uid] || {}).username || 'Пользователь'; }
+
+// Служебное сообщение в чате: «Аня добавила Макса», «Макс покинул группу»
+function postSystemMessage(chatId, text){
+  const now = new Date();
+  return db.ref('chats/' + chatId + '/messages').push({
+    system: true, text, clientId: 'system', senderName: 'SLchat', ts: Date.now(),
+    time: now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0')
+  }).catch(() => {});
+}
+
+function kickFromGroup(chat, uid){
+  if(!canKick(chat.meta, uid)) return;
+  const name = userName(uid);
+  if(!confirm('Удалить ' + name + ' из группы «' + (chat.meta.name || 'Группа') + '»?')) return;
+  const id = chat.id;
+  const updates = {};
+  updates['chats/' + id + '/meta/members/' + uid] = null;
+  updates['chats/' + id + '/meta/admins/' + uid] = null;
+  updates['userChats/' + uid + '/' + id] = null;
+  db.ref().update(updates).then(() => {
+    postSystemMessage(id, myProfile.name + ' удалил(а) ' + name + ' из группы');
+    if(profileUid === uid){ document.getElementById('user-profile-modal').style.display = 'none'; profileUid = null; }
+  }).catch(() => alert('Не получилось удалить участника'));
+}
+
+function setGroupAdmin(chat, uid, makeAdmin){
+  if(groupRole(chat.meta, myClientId) !== 'owner') return;
+  db.ref('chats/' + chat.id + '/meta/admins/' + uid).set(makeAdmin ? true : null).then(() => {
+    postSystemMessage(chat.id, userName(uid) + (makeAdmin ? ' теперь админ' : ' больше не админ'));
+  }).catch(() => alert('Не получилось изменить права'));
+}
+
+function leaveGroup(chat){
+  if(!chat || !chat.meta) return;
+  const id = chat.id;
+  const meta = chat.meta;
+  if(!confirm('Выйти из группы «' + (meta.name || 'Группа') + '»?')) return;
+  const others = Object.keys(meta.members || {}).filter(uid => uid !== myClientId);
+  const updates = {};
+  // Если уходит создатель — группа переходит первому админу (или первому участнику)
+  if(meta.createdBy === myClientId && others.length){
+    const admins = others.filter(uid => meta.admins && meta.admins[uid]);
+    const newOwner = admins[0] || others[0];
+    updates['chats/' + id + '/meta/createdBy'] = newOwner;
+    updates['chats/' + id + '/meta/admins/' + newOwner] = null;
+  }
+  updates['chats/' + id + '/meta/members/' + myClientId] = null;
+  updates['chats/' + id + '/meta/admins/' + myClientId] = null;
+  updates['userChats/' + myClientId + '/' + id] = null;
+  updates['pinnedChats/' + myClientId + '/' + id] = null;
+  // Сначала пишем «вышел», пока ещё есть доступ к чату
+  postSystemMessage(id, myProfile.name + ' покинул(а) группу').then(() => db.ref().update(updates))
+    .catch(() => alert('Не получилось выйти из группы'));
+  closeAllPeopleModals();
+  if(activeChatId === id) closeChat();
+}
+
+function deleteGroup(chat){
+  if(!chat || groupRole(chat.meta, myClientId) !== 'owner') return;
+  if(!confirm('Удалить группу «' + (chat.meta.name || 'Группа') + '» у всех участников вместе с перепиской? Это нельзя отменить.')) return;
+  const id = chat.id;
+  const updates = {};
+  Object.keys(chat.meta.members || {}).forEach(uid => { updates['userChats/' + uid + '/' + id] = null; });
+  updates['pinnedChats/' + myClientId + '/' + id] = null;
+  closeAllPeopleModals();
+  if(activeChatId === id) closeChat();
+  db.ref().update(updates).then(() => db.ref('chats/' + id).remove())
+    .catch(() => alert('Не получилось удалить группу'));
+}
+
+function renameGroup(chat){
+  if(!canManageGroup(chat.meta)) return;
+  const name = (prompt('Новое название группы', chat.meta.name || '') || '').trim();
+  if(!name || name === chat.meta.name) return;
+  db.ref('chats/' + chat.id + '/meta/name').set(name.slice(0, 64)).then(() => {
+    postSystemMessage(chat.id, myProfile.name + ' переименовал(а) группу в «' + name.slice(0, 64) + '»');
+  }).catch(() => alert('Не получилось переименовать'));
+}
+
+// ===== Окно «Информация о группе» =====
 function renderGroupInfoMembers(chat){
   const box = document.getElementById('group-members-info-list');
   box.innerHTML = '';
-  const memberUids = Object.keys((chat.meta && chat.meta.members) || {});
+  const meta = chat.meta || {};
+  const order = { owner: 0, admin: 1, member: 2 };
+  const memberUids = Object.keys(meta.members || {}).sort((a, b) =>
+    (order[groupRole(meta, a)] - order[groupRole(meta, b)]) || userName(a).localeCompare(userName(b)));
   memberUids.forEach(uid => {
-    const u = usersCache[uid] || {};
-    const row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;';
-    const avatarHtml = u.avatar
-      ? `<img src="${u.avatar}" class="avatar" style="width:34px;height:34px;object-fit:cover;" />`
-      : `<div class="avatar" style="width:34px;height:34px;font-size:13px;">${initials(u.username || '?')}</div>`;
-    row.innerHTML = `${avatarHtml}<div style="font-size:13px;">${u.username || '?'}${uid === myClientId ? ' (ты)' : ''}${devCheckHtml(u.username)}</div>`;
+    const buttons = [];
+    if(canKick(meta, uid)){
+      const kick = document.createElement('button');
+      kick.className = 'pill-btn danger';
+      kick.textContent = 'Удалить';
+      kick.onclick = (e) => { e.stopPropagation(); kickFromGroup(chat, uid); };
+      buttons.push(kick);
+    }
+    const row = personRow(uid, '', buttons);
+    const role = groupRole(meta, uid);
+    const nameEl = row.querySelector('.person-name');
+    if(uid === myClientId) nameEl.insertAdjacentHTML('beforeend', ' <span style="color:var(--muted);font-weight:400;">(ты)</span>');
+    if(role === 'owner') nameEl.insertAdjacentHTML('beforeend', '<span class="role-badge owner">создатель</span>');
+    else if(role === 'admin') nameEl.insertAdjacentHTML('beforeend', '<span class="role-badge">админ</span>');
+    row.onclick = () => openUserProfile(uid, chat.id);
     box.appendChild(row);
   });
+
+  // Шапка окна и что мне можно делать
+  const manage = canManageGroup(meta);
+  const isOwner = groupRole(meta, myClientId) === 'owner';
+  document.getElementById('group-info-name').textContent = meta.name || 'Группа';
+  document.getElementById('group-info-sub').textContent = pluralMembers(memberUids.length) +
+    (isOwner ? ' · ты создатель' : manage ? ' · ты админ' : '');
+  document.getElementById('group-admin-actions').style.display = manage ? 'flex' : 'none';
+  document.getElementById('group-add-section').style.display = manage ? 'block' : 'none';
+  document.getElementById('group-delete-btn').style.display = isOwner ? 'block' : 'none';
+  const preview = document.getElementById('group-info-avatar-preview');
+  const placeholder = document.getElementById('group-info-avatar-placeholder');
+  if(meta.avatar){
+    preview.src = meta.avatar; preview.style.display = 'block';
+    placeholder.style.display = 'none';
+  } else {
+    preview.style.display = 'none';
+    placeholder.style.display = 'flex';
+  }
+  preview.style.cursor = placeholder.style.cursor = manage ? 'pointer' : 'default';
 }
 
 function openGroupInfo(chatId){
   const chat = chats.find(c => c.id === chatId);
   if(!chat || !chat.meta) return;
   groupInfoChatId = chatId;
-  document.getElementById('group-info-name').textContent = chat.meta.name || 'Группа';
-  const preview = document.getElementById('group-info-avatar-preview');
-  const placeholder = document.getElementById('group-info-avatar-placeholder');
-  if(chat.meta.avatar){
-    preview.src = chat.meta.avatar; preview.style.display = 'block';
-    placeholder.style.display = 'none';
-  } else {
-    preview.style.display = 'none';
-    placeholder.style.display = 'flex';
-  }
   renderGroupInfoMembers(chat);
   document.getElementById('group-add-member-input').value = '';
   document.getElementById('group-info-error').textContent = '';
@@ -2798,8 +3264,18 @@ document.getElementById('close-group-info-btn').onclick = () => {
   document.getElementById('group-info-modal').style.display = 'none';
   groupInfoChatId = null;
 };
+document.getElementById('group-leave-btn').onclick = () => leaveGroup(chats.find(c => c.id === groupInfoChatId));
+document.getElementById('group-delete-btn').onclick = () => deleteGroup(chats.find(c => c.id === groupInfoChatId));
+document.getElementById('group-rename-btn').onclick = () => {
+  const chat = chats.find(c => c.id === groupInfoChatId);
+  if(chat) renameGroup(chat);
+};
 
-function openGroupAvatarPicker(){ document.getElementById('group-info-avatar-input').click(); }
+function openGroupAvatarPicker(){
+  const chat = chats.find(c => c.id === groupInfoChatId);
+  if(!chat || !canManageGroup(chat.meta)) return;
+  document.getElementById('group-info-avatar-input').click();
+}
 document.getElementById('group-info-avatar-btn').onclick = openGroupAvatarPicker;
 document.getElementById('group-info-avatar-preview').onclick = openGroupAvatarPicker;
 document.getElementById('group-info-avatar-placeholder').onclick = openGroupAvatarPicker;
@@ -2807,6 +3283,7 @@ document.getElementById('group-info-avatar-placeholder').onclick = openGroupAvat
 document.getElementById('group-info-avatar-input').addEventListener('change', e => {
   const file = e.target.files[0];
   if(!file || !groupInfoChatId) return;
+  const chatId = groupInfoChatId;
   const reader = new FileReader();
   reader.onload = ev => {
     const img = new Image();
@@ -2819,14 +3296,14 @@ document.getElementById('group-info-avatar-input').addEventListener('change', e 
       const sx = (img.width - side) / 2, sy = (img.height - side) / 2;
       ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size);
       const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
-      db.ref('chats/' + groupInfoChatId + '/meta/avatar').set(dataUrl);
-      document.getElementById('group-info-avatar-preview').src = dataUrl;
-      document.getElementById('group-info-avatar-preview').style.display = 'block';
-      document.getElementById('group-info-avatar-placeholder').style.display = 'none';
+      db.ref('chats/' + chatId + '/meta/avatar').set(dataUrl).then(() => {
+        postSystemMessage(chatId, myProfile.name + ' обновил(а) фото группы');
+      });
     };
     img.src = ev.target.result;
   };
   reader.readAsDataURL(file);
+  e.target.value = '';
 });
 
 function addMemberToGroup(directUid, directUsername){
@@ -2835,30 +3312,26 @@ function addMemberToGroup(directUid, directUsername){
   errorEl.textContent = '';
   if(!groupInfoChatId) return;
   const chat = chats.find(c => c.id === groupInfoChatId);
-  // Можно вызвать либо с готовым uid (клик по другу в быстром списке),
-  // либо без параметров — тогда логин берётся из поля ввода
-  if(directUid){
-    if(chat.meta.members && chat.meta.members[directUid]){ errorEl.textContent = 'Этот человек уже в группе'; return; }
-    db.ref('chats/' + groupInfoChatId + '/meta/members/' + directUid).set(true).then(() => {
-      db.ref('userChats/' + directUid + '/' + groupInfoChatId).set(true);
+  if(!chat || !canManageGroup(chat.meta)){ errorEl.textContent = 'Добавлять людей могут только админы'; return; }
+  const doAdd = (uid) => {
+    if(chat.meta.members && chat.meta.members[uid]){ errorEl.textContent = 'Этот человек уже в группе'; return; }
+    db.ref('chats/' + chat.id + '/meta/members/' + uid).set(true).then(() => {
+      db.ref('userChats/' + uid + '/' + chat.id).set(true);
+      postSystemMessage(chat.id, myProfile.name + ' добавил(а) ' + userName(uid));
+      input.value = '';
       renderFriendsQuickpicks();
-    });
-    return;
-  }
+    }).catch(() => { errorEl.textContent = 'Не получилось добавить'; });
+  };
+  // Можно вызвать с готовым uid (клик по другу) или взять ник из поля ввода
+  if(typeof directUid === 'string'){ doAdd(directUid); return; }
   const uname = input.value.trim().toLowerCase();
   if(!uname) return;
   db.ref('usernames/' + uname).once('value').then(snap => {
     if(!snap.exists()){ errorEl.textContent = 'Пользователь с таким логином не найден'; return; }
-    const uid = snap.val();
-    if(chat.meta.members && chat.meta.members[uid]){ errorEl.textContent = 'Этот человек уже в группе'; return; }
-    db.ref('chats/' + groupInfoChatId + '/meta/members/' + uid).set(true).then(() => {
-      db.ref('userChats/' + uid + '/' + groupInfoChatId).set(true);
-      input.value = '';
-      renderFriendsQuickpicks();
-    });
+    doAdd(snap.val());
   });
 }
-document.getElementById('group-add-member-btn').onclick = addMemberToGroup;
+document.getElementById('group-add-member-btn').onclick = () => addMemberToGroup();
 document.getElementById('group-add-member-input').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); addMemberToGroup(); }
 });
@@ -3636,6 +4109,13 @@ function submitAuth(){
   submitBtn.disabled = true;
 
   if(authMode === 'register'){
+    // Ник: латиница, цифры и _ (3–20 символов). Иначе разные ники могли
+    // превращаться в один и тот же email, а символы . # $ [ ] ломали базу
+    if(!/^[a-zA-Z0-9_]{3,20}$/.test(username)){
+      errorEl.textContent = 'Ник: 3–20 символов, только латиница, цифры и _';
+      submitBtn.disabled = false;
+      return;
+    }
     const uname = username.toLowerCase();
     db.ref('usernames/' + uname).once('value').then(snap => {
       if(snap.exists()){
@@ -3705,7 +4185,7 @@ auth.onAuthStateChanged(user => {
 function slchatTryCloseTopUI(){
   const closableIds = [
     'add-chat-modal', 'friends-modal', 'settings-modal', 'password-modal',
-    'group-info-modal', 'photo-viewer-overlay', 'story-viewer'
+    'group-info-modal', 'user-profile-modal', 'photo-viewer-overlay', 'story-viewer'
   ];
   for(const id of closableIds){
     const el = document.getElementById(id);
