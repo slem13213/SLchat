@@ -5,8 +5,8 @@
 ## Стек
 - Весь фронтенд — в одном файле `index.html` (~3200 строк: HTML + CSS + JS, без сборки и без npm).
 - Firebase через CDN (compat SDK 10.13.0): Realtime Database, Authentication, Cloud Messaging.
-- Хостинг — Netlify, деплой автоматически из ветки `main` этого репозитория. Сайт: https://slchatt.netlify.app
-- `netlify/functions/send-push.js` — серверная функция для push-уведомлений через FCM HTTP v1. Ключи берутся из переменных окружения Netlify (`FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`) — никогда не вписывать их в код.
+- Хостинг — Vercel (переезд с Netlify: там кончились бесплатные кредиты на деплой), деплой автоматически из ветки `main`. Старый сайт https://slchatt.netlify.app пока работает со старой версией. `vercel.json` перенаправляет `/.netlify/functions/*` на `/api/*`, поэтому клиентский код не менялся.
+- `netlify/functions/send-push.js` — серверная функция для push-уведомлений через FCM HTTP v1; `api/send-push.js` — переходник для Vercel на ту же логику. Ключи берутся из переменных окружения хостинга (`FCM_PROJECT_ID`, `FCM_CLIENT_EMAIL`, `FCM_PRIVATE_KEY`) — никогда не вписывать их в код.
 - Есть отдельный репозиторий `SLchat-app` — Android-обёртка (.apk) над сайтом через Capacitor.
 
 ## Возможности приложения
@@ -24,3 +24,4 @@
 ## Как работать
 - Любое изменение в `main` сразу уходит на живой сайт — перед пушем проверять, что `index.html` не сломан (открывается, нет ошибок в JS).
 - Коммиты небольшие, сообщения понятные.
+- Правила базы — в database.rules.json (копия того, что опубликовано в консоли Firebase). Разработчик в правилах задан по UID.
