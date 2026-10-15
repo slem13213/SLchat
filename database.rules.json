@@ -10,6 +10,7 @@
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && $uid === auth.uid",
+        "note": { ".validate": "newData.hasChildren(['text', 'ts']) && newData.child('text').isString() && newData.child('text').val().length <= 60" },
         "bio": { ".validate": "newData.isString() && newData.val().length <= 140" },
         "statusEmoji": { ".validate": "newData.isString() && newData.val().length <= 8" },
         "username": {
@@ -36,7 +37,7 @@
           ".read": "auth != null && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || ($chatId.beginsWith('dm_') && $chatId.contains(auth.uid)) || $chatId === 'admin_registration_log' || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
           // Создание чата: создатель — я, я в участниках; личный чат — только «свой» id.
           // Служебный чат «Регистрации» создаётся системой.
-          ".write": "auth != null && !data.exists() && !root.child('banned/' + auth.uid).exists() && ((newData.child('createdBy').val() === auth.uid && newData.child('members/' + auth.uid).val() === true && (newData.child('type').val() === 'group' || ($chatId.beginsWith('dm_') && $chatId.contains(auth.uid)))) || ($chatId === 'admin_registration_log' && newData.child('createdBy').val() === 'system'))",
+          ".write": "auth != null && !data.exists() && !root.child('banned/' + auth.uid).exists() && ((newData.child('createdBy').val() === auth.uid && newData.child('members/' + auth.uid).val() === true && (newData.child('type').val() === 'group' || ($chatId.beginsWith('dm_') && $chatId.contains(auth.uid)) || (newData.child('type').val() === 'saved' && $chatId === 'saved_' + auth.uid))) || ($chatId === 'admin_registration_log' && newData.child('createdBy').val() === 'system'))",
 
           // Название и фото группы — создатель, админы, разработчик
           "name": {
@@ -84,6 +85,13 @@
             ".write": "auth != null && !root.child('banned/' + auth.uid).exists() && ((!data.exists() && newData.exists() && !($chatId.beginsWith('dm_') && root.child('blocked/' + $chatId.replace('dm_', '').replace(auth.uid, '').replace('_', '') + '/' + auth.uid).exists()) && ((root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && (newData.child('clientId').val() === auth.uid || newData.child('clientId').val() === 'system')) || ($chatId === 'admin_registration_log' && newData.child('clientId').val() === 'system'))) || (data.exists() && newData.exists() && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && data.child('clientId').val() === auth.uid && newData.child('clientId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('clientId').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('chats/' + $chatId + '/meta/type').val() === 'group' && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true)))))",
             // Своё сообщение подписывается настоящим ником — подделать «slem2» нельзя
             ".validate": "newData.child('clientId').val() === 'system' || newData.child('senderName').val() === root.child('users/' + auth.uid + '/username').val() || (!root.child('users/' + auth.uid + '/username').exists() && newData.child('senderName').val().toLowerCase() !== 'slem2')",
+            "votes": {
+              "$uid": {
+                // Голос в опросе — каждый только свой
+                ".write": "auth != null && $uid === auth.uid && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists()",
+                ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 10"
+              }
+            },
             "reactions": {
               "$uid": {
                 // Реакцию ставит каждый только свою
@@ -189,6 +197,32 @@
       "$code": {
         ".read": "auth != null",
         ".write": "auth != null && ((!data.exists() && newData.exists() && (root.child('chats/' + newData.child('chatId').val() + '/meta/createdBy').val() === auth.uid || root.child('chats/' + newData.child('chatId').val() + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')) || (data.exists() && !newData.exists() && (root.child('chats/' + data.child('chatId').val() + '/meta/createdBy').val() === auth.uid || root.child('chats/' + data.child('chatId').val() + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))"
+      }
+    },
+
+    // Лента: пост публикует автор, удаляет автор или разработчик; лайк — каждый свой
+    "posts": {
+      ".read": "auth != null",
+      ".indexOn": ["uid"],
+      "$postId": {
+        ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && !root.child('banned/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))",
+        "likes": {
+          "$uid": { ".write": "auth != null && $uid === auth.uid && (!newData.exists() || root.child('posts/' + $postId).exists())", ".validate": "newData.val() === true" }
+        },
+        "commentsCount": {
+          ".write": "auth != null",
+          ".validate": "newData.isNumber() && newData.val() >= 0 && ((!data.exists() && newData.val() <= 1) || (data.exists() && (newData.val() === data.val() + 1 || newData.val() === data.val() - 1)))"
+        }
+      }
+    },
+    // Комментарии: пишет каждый от себя; удалить — автор комментария, автор поста или разработчик
+    "comments": {
+      ".read": "auth != null",
+      "$postId": {
+        ".write": "auth != null && !newData.exists() && (root.child('posts/' + $postId + '/uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+        "$cid": {
+          ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && root.child('posts/' + $postId).exists() && !root.child('banned/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || root.child('posts/' + $postId + '/uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))"
+        }
       }
     },
 
