@@ -7,8 +7,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="SLchat">
-<meta name="theme-color" content="#0e1621">
-<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22SLchat%22%2C%20%22short_name%22%3A%20%22SLchat%22%2C%20%22description%22%3A%20%22SLchat%20%E2%80%94%20%D0%BF%D1%80%D0%BE%D1%81%D1%82%D0%BE%D0%B9%20%D0%B4%D0%B5%D0%BC%D0%BE-%D0%BC%D0%B5%D1%81%D1%81%D0%B5%D0%BD%D0%B4%D0%B6%D0%B5%D1%80%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%230e1621%22%2C%20%22theme_color%22%3A%20%22%234ea3f7%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22icon.png%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image/png%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%7D">
+<meta name="theme-color" content="#0a0d14">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="/icon-192.png">
 <meta name="description" content="SLchat — простой демо-мессенджер">
 <title>SLchat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -40,7 +42,7 @@
   /* ===== Каркас ===== */
   #app{display:flex;height:100%;max-width:1400px;margin:0 auto;overflow:hidden;background:var(--bg);}
   #sidebar{width:370px;min-width:300px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;position:relative;}
-  #sidebar-top{display:flex;align-items:center;justify-content:space-between;padding:12px 10px 4px 16px;flex-shrink:0;}
+  #sidebar-top{display:flex;align-items:center;justify-content:space-between;padding:calc(12px + env(safe-area-inset-top,0px)) 10px 4px 16px;flex-shrink:0;}
   #sidebar-top img{max-height:30px;width:auto;display:block;}
   #sidebar-actions{display:flex;gap:2px;}
   #search-wrap{position:relative;margin:4px 14px 8px;flex-shrink:0;}
@@ -105,7 +107,7 @@
 
   /* ===== Чат ===== */
   #main{flex:1;display:flex;flex-direction:column;background:var(--bg);min-width:0;position:relative;}
-  #chat-header{padding:8px 10px 8px 14px;border-bottom:1px solid var(--line);font-weight:600;background:var(--panel);display:flex;align-items:center;gap:4px;min-height:60px;z-index:3;}
+  #chat-header{padding:calc(8px + env(safe-area-inset-top,0px)) 10px 8px 14px;border-bottom:1px solid var(--line);font-weight:600;background:var(--panel);display:flex;align-items:center;gap:4px;min-height:60px;z-index:3;}
   #chat-header-avatar-wrap{width:42px !important;height:42px !important;margin-right:8px !important;}
   #chat-header-avatar,#chat-header-avatar-fallback{width:42px !important;height:42px !important;font-size:17px !important;}
   #chat-header-titlewrap{display:flex;flex-direction:column;min-width:0;flex:1;justify-content:center;gap:1px;}
@@ -6457,19 +6459,8 @@ function setupAppIcon(){
   if(!favicon){ favicon = document.createElement('link'); favicon.rel = 'icon'; document.head.appendChild(favicon); }
   favicon.href = iconUrl;
 
-  let appleIcon = document.querySelector("link[rel='apple-touch-icon']");
-  if(!appleIcon){ appleIcon = document.createElement('link'); appleIcon.rel = 'apple-touch-icon'; document.head.appendChild(appleIcon); }
-  appleIcon.href = iconUrl;
-
-  const manifest = {
-    name: "SLchat", short_name: "SLchat", start_url: ".",
-    display: "standalone", background_color: "#0e1621", theme_color: settings.accent,
-    icons: [{ src: iconUrl, sizes: "512x512", type: "image/png" }]
-  };
-  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
-  let manifestLink = document.querySelector("link[rel='manifest']");
-  if(!manifestLink){ manifestLink = document.createElement('link'); manifestLink.rel = 'manifest'; document.head.appendChild(manifestLink); }
-  manifestLink.href = URL.createObjectURL(blob);
+  // Манифест и иконка для главного экрана — отдельные файлы (manifest.webmanifest,
+  // apple-touch-icon.png): так их правильно видят iPhone и Android при установке
 }
 setupAppIcon();
 applySettings();
