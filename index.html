@@ -11,6 +11,9 @@
 <link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%20%22SLchat%22%2C%20%22short_name%22%3A%20%22SLchat%22%2C%20%22description%22%3A%20%22SLchat%20%E2%80%94%20%D0%BF%D1%80%D0%BE%D1%81%D1%82%D0%BE%D0%B9%20%D0%B4%D0%B5%D0%BC%D0%BE-%D0%BC%D0%B5%D1%81%D1%81%D0%B5%D0%BD%D0%B4%D0%B6%D0%B5%D1%80%22%2C%20%22start_url%22%3A%20%22.%22%2C%20%22display%22%3A%20%22standalone%22%2C%20%22background_color%22%3A%20%22%230e1621%22%2C%20%22theme_color%22%3A%20%22%234ea3f7%22%2C%20%22icons%22%3A%20%5B%7B%22src%22%3A%20%22icon.png%22%2C%20%22sizes%22%3A%20%22512x512%22%2C%20%22type%22%3A%20%22image/png%22%2C%20%22purpose%22%3A%20%22any%20maskable%22%7D%5D%7D">
 <meta name="description" content="SLchat — простой демо-мессенджер">
 <title>SLchat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#0a0d14; --panel:#10151f; --panel2:#1a2130; --panel3:#232c3d; --line:rgba(255,255,255,0.06);
@@ -285,8 +288,41 @@
   body[data-theme="light"] .sys-msg{background:rgba(255,255,255,0.8);color:#334;}
   .msg-sender{cursor:pointer;}
 
-  /* ===== Разработчик ===== */
-  .dev-check{background:var(--ig) !important;}
+  /* ===== Живость: аватарки, точки «в сети», поиск, новый чат ===== */
+  .av-wrap{position:relative;flex-shrink:0;display:flex;}
+  .online-dot{position:absolute;right:0;bottom:0;width:14px;height:14px;border-radius:50%;background:#2ed47a;border:2.5px solid var(--panel);box-shadow:0 0 0 0 rgba(46,212,122,0.6);animation:onlinePulse 2.4s infinite;}
+  @keyframes onlinePulse{0%{box-shadow:0 0 0 0 rgba(46,212,122,0.5)}70%{box-shadow:0 0 0 6px rgba(46,212,122,0)}100%{box-shadow:0 0 0 0 rgba(46,212,122,0)}}
+  .chat-item.active .online-dot{border-color:var(--accent);}
+  .chat-item.has-unread .chat-name{font-weight:800;}
+  .chat-item.has-unread .chat-last{color:var(--text);}
+  .chat-item.active.has-unread .chat-last{color:#fff;}
+  .avatar{text-shadow:0 1px 2px rgba(0,0,0,0.18);}
+  mark{background:none;color:var(--accent);font-weight:800;}
+  .friend-tag{font-size:10.5px;font-weight:700;color:var(--accent);background:rgba(78,163,247,0.14);padding:1px 7px;border-radius:8px;margin-left:6px;vertical-align:middle;}
+  .person{transition:background .12s, transform .08s;}
+  .person:active{transform:scale(0.985);}
+  .person.picked{background:rgba(78,163,247,0.10);}
+  .pick-check{width:24px;height:24px;border-radius:50%;border:2px solid var(--panel3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;transition:all .15s;}
+  .pick-check.on{background:var(--accent);border-color:var(--accent);transform:scale(1.05);}
+  .primary-wide-btn{display:block;width:100%;border:none;background:var(--ig);color:#fff;font-weight:700;font-size:15px !important;padding:13px;border-radius:14px !important;cursor:pointer;margin-top:6px;box-shadow:0 8px 24px rgba(214,41,118,0.25);}
+  .primary-wide-btn:disabled{opacity:.45;box-shadow:none;cursor:default;}
+  .group-name-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+  .group-name-row input{flex:1;}
+  .group-new-avatar{width:48px !important;height:48px !important;font-size:22px;background-image:var(--ig) !important;}
+  .member-chip{gap:7px;padding:4px 10px 4px 4px;}
+  .member-chip .avatar{width:24px;height:24px;font-size:11px;}
+  .msg-row{display:flex;align-items:flex-end;gap:8px;align-self:flex-start;max-width:min(580px,86%);min-width:0;}
+  .msg-row .bubble{max-width:100%;min-width:0;}
+  .msg-row.grp-end{margin-bottom:6px;}
+  .msg-row .bubble.grp-end{margin-bottom:0;}
+  .msg-avatar{width:34px;flex-shrink:0;cursor:pointer;}
+  .msg-avatar .avatar{width:34px;height:34px;font-size:14px;}
+  .bubble.swipe-ready::after{content:"↩";position:absolute;right:-34px;top:50%;transform:translateY(-50%);width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;}
+  .dev-ring{box-shadow:0 0 0 3px var(--panel),0 0 0 6px #d62976,0 0 24px rgba(214,41,118,0.45);}
+  .chat-item{transition:background .12s, transform .08s;}
+  .chat-item:active{transform:scale(0.99);}
+
+  /* ===== Разработчик ===== */  .dev-check{background:var(--ig) !important;}
   .verified-check{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;background:#4ea3f7;color:#fff;border-radius:50%;font-size:9px;vertical-align:middle;margin-left:4px;flex-shrink:0;}
   .verified-pill{display:inline-flex;align-items:center;gap:3px;background:#4ea3f7;color:#fff;font-size:11px;font-weight:700;padding:2px 8px 2px 6px;border-radius:10px;vertical-align:middle;margin-left:6px;}
   .dev-name{background:var(--ig);-webkit-background-clip:text;background-clip:text;color:transparent !important;}
@@ -480,34 +516,31 @@
     <div class="ctx-item danger" id="msg-delete-item"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Удалить</div>
   </div>
 
-  <div id="add-chat-modal" class="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10;align-items:center;justify-content:center;">
-    <div style="background:var(--panel);border-radius:14px;padding:20px;width:280px;max-width:90vw;">
-      <h2 style="margin:0 0 14px;font-size:16px;">Новый чат</h2>
-      <div style="display:flex;gap:6px;margin-bottom:14px;">
-        <button id="mode-dm-btn" class="chat-mode-btn selected" data-mode="dm">🔒 Личный чат</button>
-        <button id="mode-group-btn" class="chat-mode-btn" data-mode="group">👥 Группа</button>
+  <div id="add-chat-modal" class="modal" style="display:none;">
+    <div>
+      <div class="sheet-head">
+        <h2 id="add-chat-title">Новый чат</h2>
+        <button id="cancel-chat-btn" class="icon-btn" title="Закрыть"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
       </div>
-
-      <div id="dm-fields">
-        <input id="new-chat-partner" placeholder="Логин собеседника" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
-        <div id="dm-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
+      <div class="seg">
+        <button id="mode-dm-btn" class="seg-btn selected" data-mode="dm">💬 Личный чат</button>
+        <button id="mode-group-btn" class="seg-btn" data-mode="group">👥 Группа</button>
       </div>
-
       <div id="group-fields" style="display:none;">
-        <input id="new-group-name" placeholder="Название группы" style="width:100%;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;margin-bottom:8px;" />
-        <div style="display:flex;gap:6px;margin-bottom:8px;">
-          <input id="new-group-member-input" placeholder="Логин участника" style="flex:1;padding:10px 12px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);font-size:14px;outline:none;" />
-          <button id="add-group-member-btn" style="padding:0 14px;border-radius:10px;border:none;background:var(--panel2);color:var(--accent);font-weight:600;cursor:pointer;">+</button>
+        <div class="group-name-row">
+          <div class="avatar group-new-avatar">👥</div>
+          <input id="new-group-name" placeholder="Название группы" maxlength="64" autocomplete="off" />
         </div>
-        <div id="group-members-list" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px;"></div>
-        <div id="group-friends-quickpick" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:4px;"></div>
+        <div id="group-members-list" class="chips"></div>
       </div>
-
-      <div id="add-chat-error" style="color:#f76e6e;font-size:12px;min-height:14px;margin-top:6px;margin-bottom:8px;"></div>
-      <div style="display:flex;gap:8px;">
-        <button id="cancel-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--panel2);color:var(--text);cursor:pointer;">Отмена</button>
-        <button id="create-chat-btn" style="flex:1;padding:10px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:600;cursor:pointer;">Создать</button>
+      <div class="search-box">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="new-chat-search" placeholder="Кому написать? Начни вводить ник" autocomplete="off" />
       </div>
+      <div id="new-chat-people-title" class="settings-section-title">Друзья</div>
+      <div id="new-chat-people" class="people-list"></div>
+      <div id="add-chat-error" class="form-error"></div>
+      <button id="create-chat-btn" class="primary-wide-btn" style="display:none;">Создать группу</button>
     </div>
   </div>
 
@@ -637,7 +670,7 @@
           <input id="group-add-member-input" placeholder="Ник участника" autocomplete="off" />
           <button id="group-add-member-btn" class="pill-btn primary">Добавить</button>
         </div>
-        <div id="group-info-friends-quickpick" class="chips"></div>
+        <div id="group-info-friends-quickpick" class="people-list"></div>
       </div>
       <div id="group-info-error" class="form-error"></div>
       <div class="settings-section-title">Участники</div>
@@ -1299,10 +1332,32 @@ function userStatusText(uid){
   return { text: formatLastSeen(u.lastSeen), online: false };
 }
 
-function avatarHtmlFor(name, avatar){
+// ===== Цветные аватарки: у каждого человека/группы свой градиент (как в Telegram) =====
+const AVATAR_GRADIENTS = [
+  ['#ff8a65', '#ff4f81'], ['#ffb74d', '#ff7043'], ['#f9d423', '#ff8c37'], ['#5ee7a0', '#18b88f'],
+  ['#4fc3f7', '#5b7cfa'], ['#a18cff', '#e85d9f'], ['#4dd0e1', '#3f8cff'], ['#f48fb1', '#b065ef']
+];
+function hashStr(s){
+  s = String(s || '');
+  let h = 0;
+  for(let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+function avatarGradient(key){
+  const g = AVATAR_GRADIENTS[hashStr(key) % AVATAR_GRADIENTS.length];
+  return `linear-gradient(135deg, ${g[0]}, ${g[1]})`;
+}
+function avatarHtmlFor(name, avatar, key){
   return avatar
     ? `<img src="${avatar}" class="avatar" style="object-fit:cover;" />`
-    : `<div class="avatar">${escapeHtml(initials(name || '?'))}</div>`;
+    : `<div class="avatar" style="background-image:${avatarGradient(key || name)}">${escapeHtml(initials(name || '?'))}</div>`;
+}
+// В сети ли человек — с учётом его настройки приватности
+function isUserOnline(uid){
+  return !!uid && uid !== myClientId && canSeeOnline(uid) && !!(usersCache[uid] || {}).online;
+}
+function avatarWithDot(innerHtml, online){
+  return `<div class="av-wrap">${innerHtml}${online ? '<span class="online-dot"></span>' : ''}</div>`;
 }
 
 // Кнопка действия «дружба» для строки человека
@@ -1333,16 +1388,20 @@ function friendActionButton(uid){
   return b;
 }
 
-// Одна строка «человек»: аватар, имя, статус, кнопки. Клик — открыть профиль
-function personRow(uid, fallbackName, buttons, subOverride){
+// Одна строка «человек»: аватар (с точкой «в сети»), имя, статус, кнопки.
+// Клик — открыть профиль. opts.highlight — подсветить совпадение с поиском.
+function personRow(uid, fallbackName, buttons, subOverride, opts){
+  opts = opts || {};
   const u = usersCache[uid] || {};
   const name = u.username || fallbackName || '?';
   const row = document.createElement('div');
   row.className = 'person';
   const st = subOverride ? { text: subOverride, online: false } : userStatusText(uid);
-  row.innerHTML = `${avatarHtmlFor(name, u.avatar)}
+  const nameHtml = opts.highlight ? highlightMatch(name, opts.highlight) : escapeHtml(name);
+  const friendTag = (!subOverride && friendsCache[uid]) ? '<span class="friend-tag">друг</span>' : '';
+  row.innerHTML = `${avatarWithDot(avatarHtmlFor(name, u.avatar, uid), isUserOnline(uid))}
     <div class="person-info">
-      <div class="person-name">${escapeHtml(name)}${devCheckHtml(name)}</div>
+      <div class="person-name">${nameHtml}${devCheckHtml(name)}${friendTag}</div>
       <div class="person-sub${st.online ? ' online' : ''}">${escapeHtml(st.text)}</div>
     </div>
     <div class="person-actions"></div>`;
@@ -1400,29 +1459,86 @@ function renderFriendsModal(){
   renderPeopleSearch();
 }
 
-// Живой поиск людей по нику (по началу ника)
-let peopleSearchResults = [];
-let peopleSearchTimer = null;
-let peopleSearchSeq = 0;
-function runPeopleSearch(q){
-  q = (q || '').trim().toLowerCase();
-  document.getElementById('friends-error').textContent = '';
-  if(!q){ peopleSearchResults = []; renderPeopleSearch(); return; }
-  const seq = ++peopleSearchSeq;
-  db.ref('usernames').orderByKey().startAt(q).endAt(q + '').limitToFirst(10).once('value').then(snap => {
-    if(seq !== peopleSearchSeq) return; // уже ищем что-то новее
-    const res = [];
-    snap.forEach(child => { if(child.val() !== myClientId) res.push({ uid: child.val(), username: child.key }); });
-    peopleSearchResults = res;
-    renderPeopleSearch();
-    if(!res.length) document.getElementById('friends-error').textContent = 'Никого не нашлось';
-  }).catch(() => { document.getElementById('friends-error').textContent = 'Поиск не удался'; });
+// ===== Умный поиск людей =====
+// Ищет мгновенно по всем пользователям (они уже загружены в usersCache):
+// точное совпадение > начало ника > любая часть ника > ник с опечаткой.
+// Друзья и те, кто в сети, — выше. Пустой запрос — показываем друзей.
+function normQuery(q){ return String(q || '').trim().toLowerCase().replace(/^@/, ''); }
+
+function levenshtein(a, b){
+  if(a === b) return 0;
+  if(!a.length) return b.length;
+  if(!b.length) return a.length;
+  let prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for(let i = 1; i <= a.length; i++){
+    const cur = [i];
+    for(let j = 1; j <= b.length; j++){
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[b.length];
 }
+function isSubsequence(q, s){
+  let i = 0;
+  for(const ch of s){ if(ch === q[i]) i++; if(i === q.length) return true; }
+  return false;
+}
+
+function searchPeople(query, opts){
+  opts = opts || {};
+  const q = normQuery(query);
+  const out = [];
+  Object.keys(usersCache || {}).forEach(uid => {
+    if(uid === myClientId) return;
+    if(opts.exclude && opts.exclude(uid)) return;
+    const name = (usersCache[uid] || {}).username || '';
+    if(!name) return;
+    const n = name.toLowerCase();
+    let score;
+    if(!q){
+      if(!friendsCache[uid]) return; // без запроса — только друзья
+      score = 50;
+    } else if(n === q) score = 100;
+    else if(n.startsWith(q)) score = 90 - Math.min(10, n.length - q.length) * 0.5;
+    else if(n.includes(q)) score = 70;
+    else {
+      // Опечатки: сравниваем с началом ника той же длины и с ником целиком
+      const d = Math.min(levenshtein(q, n.slice(0, q.length)), levenshtein(q, n));
+      const allowed = q.length >= 7 ? 2 : (q.length >= 3 ? 1 : 0);
+      if(d <= allowed) score = 55 - d * 5;
+      else if(q.length >= 3 && isSubsequence(q, n)) score = 35;
+      else return;
+    }
+    if(friendsCache[uid]) score += 8;
+    if(isUserOnline(uid)) score += 3;
+    out.push({ uid, username: name, score });
+  });
+  out.sort((a, b) => b.score - a.score || a.username.localeCompare(b.username));
+  return out.slice(0, opts.limit || 12);
+}
+
+// Подсветить совпавшую часть ника
+function highlightMatch(name, query){
+  const q = normQuery(query);
+  const i = q ? name.toLowerCase().indexOf(q) : -1;
+  if(i < 0) return escapeHtml(name);
+  return escapeHtml(name.slice(0, i)) + '<mark>' + escapeHtml(name.slice(i, i + q.length)) + '</mark>' + escapeHtml(name.slice(i + q.length));
+}
+
+// Поиск в окне «Друзья»
+let peopleSearchQuery = '';
 function renderPeopleSearch(){
   const box = document.getElementById('people-search-results');
   if(!box) return;
   box.innerHTML = '';
-  peopleSearchResults.forEach(r => box.appendChild(personRow(r.uid, r.username, [friendActionButton(r.uid)])));
+  const q = normQuery(peopleSearchQuery);
+  document.getElementById('friends-tabs').style.display = q ? 'none' : 'flex';
+  if(!q) return;
+  ['friends-list', 'friend-requests-list', 'sent-requests-list'].forEach(id => { document.getElementById(id).style.display = 'none'; });
+  const res = searchPeople(q, { limit: 20 });
+  res.forEach(r => box.appendChild(personRow(r.uid, r.username, [friendActionButton(r.uid)], null, { highlight: q })));
+  if(!res.length) box.innerHTML = `<div class="people-empty">Никого не нашлось по «${escapeHtml(q)}» 🤷</div>`;
 }
 
 // Написать человеку: если личный чат уже есть — открываем, иначе создаём
@@ -1462,7 +1578,9 @@ function renderUserProfile(){
   const name = u.username || '?';
   const av = document.getElementById('up-avatar');
   if(u.avatar) av.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
-  else av.textContent = initials(name);
+  else { av.textContent = initials(name); av.style.backgroundImage = avatarGradient(uid); }
+  if(u.avatar) av.style.backgroundImage = '';
+  av.classList.toggle('dev-ring', isDevUsername(name));
   document.getElementById('up-name').innerHTML = escapeHtml(name) + devPillHtml(name);
   const st = userStatusText(uid);
   const stEl = document.getElementById('up-status');
@@ -1503,7 +1621,7 @@ function renderUserProfile(){
   common.forEach(c => {
     const row = document.createElement('div');
     row.className = 'person';
-    row.innerHTML = `${c.avatar ? `<img src="${c.avatar}" class="avatar" style="object-fit:cover;" />` : '<div class="avatar">👥</div>'}
+    row.innerHTML = `${c.avatar ? `<img src="${c.avatar}" class="avatar" style="object-fit:cover;" />` : `<div class="avatar" style="background-image:${avatarGradient(c.id)}">👥</div>`}
       <div class="person-info"><div class="person-name">${escapeHtml(c.name)}</div>
       <div class="person-sub">${pluralMembers(Object.keys(c.meta.members || {}).length)}</div></div>`;
     row.onclick = () => { closeAllPeopleModals(); openChat(c.id); };
@@ -1544,54 +1662,32 @@ document.getElementById('up-kick-btn').onclick = () => {
   kickFromGroup(chat, profileUid);
 };
 
-// Быстрый выбор друзей при создании личного/группового чата и при
-// добавлении участника в уже существующую группу
+// Обновить списки людей в открытых окнах, когда меняются друзья/пользователи
 function renderFriendsQuickpicks(){
-  const friendUids = Object.keys(friendsCache);
-  const dmBox = document.getElementById('dm-friends-quickpick');
-  if(dmBox){
-    dmBox.innerHTML = '';
-    friendUids.forEach(uid => {
-      const u = usersCache[uid] || {};
-      const chip = document.createElement('button');
-      chip.className = 'friend-chip';
-      chip.textContent = u.username || '?';
-      chip.onclick = () => { document.getElementById('new-chat-partner').value = u.username || ''; };
-      dmBox.appendChild(chip);
-    });
-  }
-  const groupBox = document.getElementById('group-friends-quickpick');
-  if(groupBox){
-    groupBox.innerHTML = '';
-    friendUids.forEach(uid => {
-      const u = usersCache[uid] || {};
-      if(groupMembers.find(m => m.uid === uid)) return;
-      const chip = document.createElement('button');
-      chip.className = 'friend-chip';
-      chip.textContent = '+ ' + (u.username || '?');
-      chip.onclick = () => {
-        if(!groupMembers.find(m => m.uid === uid)) groupMembers.push({ uid, username: u.username });
-        renderGroupMembers();
-        renderFriendsQuickpicks();
-      };
-      groupBox.appendChild(chip);
-    });
-  }
-  const groupInfoBox = document.getElementById('group-info-friends-quickpick');
-  if(groupInfoBox){
-    groupInfoBox.innerHTML = '';
-    const chat = chats.find(c => c.id === groupInfoChatId);
-    const existingMembers = (chat && chat.meta && chat.meta.members) || {};
-    friendUids.forEach(uid => {
-      if(existingMembers[uid]) return;
-      const u = usersCache[uid] || {};
-      const chip = document.createElement('button');
-      chip.className = 'friend-chip';
-      chip.textContent = '+ ' + (u.username || '?');
-      chip.onclick = () => addMemberToGroup(uid, u.username);
-      groupInfoBox.appendChild(chip);
-    });
-  }
+  const addModal = document.getElementById('add-chat-modal');
+  if(addModal && addModal.style.display === 'flex') renderNewChatPeople();
+  renderGroupAddSuggestions();
+}
+
+// Подсказки в окне группы: без запроса — друзья, которых ещё нет в группе;
+// с запросом — умный поиск по всем
+function renderGroupAddSuggestions(){
+  const box = document.getElementById('group-info-friends-quickpick');
+  if(!box) return;
+  box.innerHTML = '';
+  const chat = chats.find(c => c.id === groupInfoChatId);
+  if(!chat || !chat.meta) return;
+  const members = chat.meta.members || {};
+  const q = document.getElementById('group-add-member-input').value;
+  const res = searchPeople(q, { limit: normQuery(q) ? 8 : 6, exclude: uid => !!members[uid] });
+  res.forEach(r => {
+    const add = document.createElement('button');
+    add.className = 'pill-btn primary';
+    add.textContent = 'Добавить';
+    add.onclick = (e) => { e.stopPropagation(); addMemberToGroup(r.uid); };
+    box.appendChild(personRow(r.uid, r.username, [add], null, { highlight: q }));
+  });
+  if(!res.length && normQuery(q)) box.innerHTML = '<div class="people-empty">Никого не нашлось</div>';
 }
 
 // Уведомление владельцу приложения о каждом новом зарегистрированном пользователе
@@ -1703,8 +1799,11 @@ let lastSeen = {};
 try { lastSeen = JSON.parse(localStorage.getItem(LAST_SEEN_KEY) || '{}'); } catch(e) {}
 function saveLastSeen(){ try { localStorage.setItem(LAST_SEEN_KEY, JSON.stringify(lastSeen)); } catch(e) {} }
 function unreadCount(chat){
-  const seenTs = lastSeen[chat.id] || 0;
-  return chat.messages.filter(m => (m.ts||0) > seenTs && m.clientId !== myClientId).length;
+  // Отметка «прочитано» хранится в базе (chats/{id}/reads/{я}) — она общая для всех
+  // устройств и адресов сайта. Память браузера — только запасной вариант.
+  const serverTs = (chatReads[chat.id] || {})[myClientId] || 0;
+  const seenTs = Math.max(lastSeen[chat.id] || 0, serverTs);
+  return chat.messages.filter(m => (m.ts||0) > seenTs && m.clientId !== myClientId && !m.system).length;
 }
 
 // Уведомления в браузере — показываются для новых сообщений в чатах,
@@ -1760,6 +1859,7 @@ function listenToChat(chat){
   let firstLoad = true;
   db.ref('chats/' + chat.id + '/reads').on('value', snap => {
     chatReads[chat.id] = snap.val() || {};
+    renderChatList();
     if(activeChatId === chat.id) renderMessages();
   });
   ref.on('value', snap => {
@@ -1844,6 +1944,7 @@ function applyProfileToUI(){
     preview.style.display = 'none';
     placeholder.style.display = 'flex';
     placeholder.textContent = initials(myProfile.name || 'Я');
+    placeholder.style.backgroundImage = avatarGradient(myClientId);
   }
   syncNavAvatar();
 }
@@ -2003,6 +2104,34 @@ function wireMessageBubble(div, m, chat){
     pressTimer = setTimeout(() => { openMsgMenu(m, chat, t.clientX, t.clientY); if(navigator.vibrate) navigator.vibrate(15); }, 450);
   }, { passive: true });
   ['touchend', 'touchmove', 'touchcancel'].forEach(ev => div.addEventListener(ev, () => clearTimeout(pressTimer)));
+
+  // Свайп влево по сообщению — ответить (как в Telegram)
+  let sx = 0, sy = 0, dx = 0, swiping = false, swipeBlocked = false;
+  div.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    sx = t.clientX; sy = t.clientY; dx = 0; swiping = false;
+    swipeBlocked = !!(e.target.closest && e.target.closest('input, video'));
+  }, { passive: true });
+  div.addEventListener('touchmove', (e) => {
+    if(swipeBlocked || !m._key) return;
+    const t = e.touches[0];
+    const mx = t.clientX - sx, my = t.clientY - sy;
+    if(!swiping && mx < -12 && Math.abs(mx) > Math.abs(my) * 1.5) swiping = true;
+    if(swiping){
+      dx = Math.max(-90, Math.min(0, mx));
+      div.style.transform = `translateX(${dx}px)`;
+      div.classList.toggle('swipe-ready', dx <= -60);
+    }
+  }, { passive: true });
+  div.addEventListener('touchend', () => {
+    if(!swiping) return;
+    swiping = false;
+    div.style.transition = 'transform .2s ease';
+    div.style.transform = '';
+    setTimeout(() => { div.style.transition = ''; }, 220);
+    div.classList.remove('swipe-ready');
+    if(dx <= -60){ startReply(m, chat); if(navigator.vibrate) navigator.vibrate(10); }
+  });
   div.addEventListener('contextmenu', (e) => {
     if(isControl(e.target) && !e.target.closest('.msg-photo')) return;
     e.preventDefault();
@@ -2126,7 +2255,7 @@ function syncNavAvatar(){
   const el = document.getElementById('nav-avatar');
   if(!el) return;
   if(myProfile.avatar) el.innerHTML = `<img src="${myProfile.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
-  else el.textContent = initials(myProfile.name || 'Я');
+  else { el.textContent = initials(myProfile.name || 'Я'); el.style.backgroundImage = avatarGradient(myClientId); }
 }
 
 function renderChatList(){
@@ -2152,7 +2281,7 @@ function renderChatList(){
     const isGroup = chat.meta && chat.meta.type === 'group';
     const avatarHtml = chat.avatar
       ? `<img src="${chat.avatar}" class="avatar" style="object-fit:cover;" />`
-      : `<div class="avatar">${isGroup ? '👥' : initials(chat.name)}</div>`;
+      : `<div class="avatar" style="background-image:${avatarGradient(isGroup ? chat.id : (otherMemberUid(chat.meta) || chat.id))}">${isGroup ? '👥' : escapeHtml(initials(chat.name || '?'))}</div>`;
     const unread = unreadCount(chat);
     const badgeHtml = unread > 0 ? `<div class="unread-badge">${unread > 99 ? '99+' : unread}</div>` : '';
     const nameDevBadge = !isGroup ? devCheckHtml(chat.name) : '';
@@ -2170,8 +2299,9 @@ function renderChatList(){
       const isRead = otherUid && ((chatReads[chat.id] || {})[otherUid] || 0) >= (last.ts || 0);
       tickHtml = `<span class="read-tick${isRead ? ' read' : ''}" style="color:${isRead ? 'var(--accent)' : 'var(--muted)'};margin-right:2px;">${isRead ? '✓✓' : '✓'}</span>`;
     }
+    if(unread > 0) div.classList.add('has-unread');
     div.innerHTML = `
-      ${avatarHtml}
+      ${avatarWithDot(avatarHtml, !isGroup && isUserOnline(otherMemberUid(chat.meta)))}
       <div class="chat-meta">
         <div class="chat-row"><div class="chat-name">${escapeHtml(chat.name)}${nameDevBadge}</div>${tickHtml}<span class="chat-time">${last ? shortMsgTime(last) : ''}</span></div>
         <div class="chat-row"><div class="chat-last">${lastHtml}</div>${badgeHtml}${pinIconHtml}</div>
@@ -2277,6 +2407,7 @@ function updateChatHeader(chat){
     headerAvatar.style.display = 'none';
     headerFallback.style.display = 'flex';
     headerFallback.textContent = isGroup ? '👥' : initials(chat.name);
+    headerFallback.style.backgroundImage = avatarGradient(isGroup ? chat.id : (otherMemberUid(chat.meta) || chat.id));
   }
   const callBtn = document.getElementById('call-btn');
   const videoCallBtn = document.getElementById('video-call-btn');
@@ -2414,7 +2545,24 @@ function renderMessages(){
       };
       videoEl.onended = () => overlay.classList.remove('hidden');
     }
-    box.appendChild(div);
+    // В группе у чужих сообщений слева аватарка автора (на последнем сообщении серии)
+    if(isGroup && !isMine && !m.videoNote){
+      const row = document.createElement('div');
+      row.className = 'msg-row' + (grpEnd ? ' grp-end' : '');
+      const u = usersCache[m.clientId] || {};
+      const name = u.username || m.senderName || '?';
+      const av = document.createElement('div');
+      av.className = 'msg-avatar';
+      if(grpEnd){
+        av.innerHTML = avatarHtmlFor(name, u.avatar || m.senderAvatar, m.clientId);
+        av.onclick = () => openUserProfile(m.clientId, chat.id);
+      }
+      row.appendChild(av);
+      row.appendChild(div);
+      box.appendChild(row);
+    } else {
+      box.appendChild(div);
+    }
   });
   if(!sameChat || distFromBottom < 150) box.scrollTop = box.scrollHeight;
   else box.scrollTop = box.scrollHeight - box.clientHeight - distFromBottom;
@@ -2807,7 +2955,7 @@ function renderStoriesBar(){
   mineDiv.className = 'story-item';
   const mineAvatarHtml = myProfile.avatar
     ? `<img src="${myProfile.avatar}"/>`
-    : `<div class="avatar" style="width:100%;height:100%;">${initials(myProfile.name || 'Я')}</div>`;
+    : `<div class="avatar" style="width:100%;height:100%;background-image:${avatarGradient(myClientId)}">${initials(myProfile.name || 'Я')}</div>`;
   mineDiv.innerHTML = `
     <div class="story-ring ${mineActive ? '' : 'mine'}">
       ${mineAvatarHtml}
@@ -2827,7 +2975,7 @@ function renderStoriesBar(){
     const seen = (seenStories[uid] || 0) >= s.createdAt;
     const avatarHtml = s.avatar
       ? `<img src="${s.avatar}"/>`
-      : `<div class="avatar" style="width:100%;height:100%;">${initials(s.username || '?')}</div>`;
+      : `<div class="avatar" style="width:100%;height:100%;background-image:${avatarGradient(uid)}">${escapeHtml(initials(s.username || '?'))}</div>`;
     const div = document.createElement('div');
     div.className = 'story-item';
     div.innerHTML = `
@@ -3049,17 +3197,23 @@ document.getElementById('profile-avatar-input').addEventListener('change', e => 
   reader.readAsDataURL(file);
 });
 
-// Создание нового чата — личный (1 на 1) или группа с несколькими людьми
+// ===== «Новый чат» как в Telegram: список людей с аватарками и поиском =====
+// Личный чат — нажал на человека и сразу пишешь. Группа — отмечаешь галочками.
 let addChatMode = 'dm';
 let groupMembers = []; // { uid, username }
 
 function setAddChatMode(mode){
   addChatMode = mode;
-  document.getElementById('mode-dm-btn').classList.toggle('selected', mode === 'dm');
-  document.getElementById('mode-group-btn').classList.toggle('selected', mode === 'group');
-  document.getElementById('dm-fields').style.display = mode === 'dm' ? 'block' : 'none';
-  document.getElementById('group-fields').style.display = mode === 'group' ? 'block' : 'none';
+  const isGroup = mode === 'group';
+  document.getElementById('mode-dm-btn').classList.toggle('selected', !isGroup);
+  document.getElementById('mode-group-btn').classList.toggle('selected', isGroup);
+  document.getElementById('group-fields').style.display = isGroup ? 'block' : 'none';
+  document.getElementById('create-chat-btn').style.display = isGroup ? 'block' : 'none';
+  document.getElementById('add-chat-title').textContent = isGroup ? 'Новая группа' : 'Новый чат';
+  document.getElementById('new-chat-search').placeholder = isGroup ? 'Найти участников по нику' : 'Кому написать? Начни вводить ник';
   document.getElementById('add-chat-error').textContent = '';
+  renderGroupMembers();
+  renderNewChatPeople();
 }
 document.getElementById('mode-dm-btn').onclick = () => setAddChatMode('dm');
 document.getElementById('mode-group-btn').onclick = () => setAddChatMode('group');
@@ -3068,33 +3222,89 @@ function renderGroupMembers(){
   const box = document.getElementById('group-members-list');
   box.innerHTML = '';
   groupMembers.forEach((m, i) => {
+    const u = usersCache[m.uid] || {};
     const chip = document.createElement('div');
     chip.className = 'member-chip';
-    chip.innerHTML = `${escapeHtml(m.username)} <button data-i="${i}">✕</button>`;
+    chip.innerHTML = `${avatarHtmlFor(m.username, u.avatar, m.uid)}<span>${escapeHtml(m.username)}</span><button title="Убрать">✕</button>`;
     chip.querySelector('button').onclick = () => {
       groupMembers.splice(i, 1);
       renderGroupMembers();
+      renderNewChatPeople();
     };
     box.appendChild(chip);
   });
+  const btn = document.getElementById('create-chat-btn');
+  btn.textContent = groupMembers.length ? `Создать группу · ${pluralMembers(groupMembers.length + 1)}` : 'Создать группу';
+  btn.disabled = !groupMembers.length;
+}
+
+function renderNewChatPeople(){
+  const box = document.getElementById('new-chat-people');
+  if(!box) return;
+  const q = normQuery(document.getElementById('new-chat-search').value);
+  const isGroup = addChatMode === 'group';
+  const res = searchPeople(q, { limit: 30 });
+  document.getElementById('new-chat-people-title').textContent = q ? 'Результаты поиска' : 'Друзья';
+  document.getElementById('new-chat-people-title').style.display = res.length ? 'block' : 'none';
+  box.innerHTML = '';
+  res.forEach(r => {
+    const picked = !!groupMembers.find(m => m.uid === r.uid);
+    let extra = [];
+    if(isGroup){
+      const check = document.createElement('span');
+      check.className = 'pick-check' + (picked ? ' on' : '');
+      check.textContent = picked ? '✓' : '';
+      extra = [check];
+    }
+    const row = personRow(r.uid, r.username, extra, null, { highlight: q });
+    if(picked) row.classList.add('picked');
+    row.onclick = () => {
+      if(isGroup){
+        const i = groupMembers.findIndex(m => m.uid === r.uid);
+        if(i >= 0) groupMembers.splice(i, 1); else groupMembers.push({ uid: r.uid, username: r.username });
+        renderGroupMembers();
+        renderNewChatPeople();
+      } else {
+        document.getElementById('add-chat-modal').style.display = 'none';
+        writeToUser(r.uid);
+      }
+    };
+    box.appendChild(row);
+  });
+  if(!res.length){
+    box.innerHTML = q
+      ? `<div class="people-empty">Никого не нашлось по «${escapeHtml(q)}» 🤷<br>Проверь ник — опечатки я тоже понимаю.</div>`
+      : '<div class="people-empty">Начни вводить ник — подсказки появятся сразу 👆<br>Здесь будут твои друзья.</div>';
+  }
 }
 
 document.getElementById('add-chat-btn').onclick = () => {
-  document.getElementById('new-chat-partner').value = '';
+  document.getElementById('new-chat-search').value = '';
   document.getElementById('new-group-name').value = '';
-  document.getElementById('new-group-member-input').value = '';
   groupMembers = [];
-  renderGroupMembers();
-  renderFriendsQuickpicks();
-  document.getElementById('add-chat-error').textContent = '';
   setAddChatMode('dm');
   document.getElementById('add-chat-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-chat-search').focus(), 50);
 };
+document.getElementById('new-chat-search').addEventListener('input', renderNewChatPeople);
+document.getElementById('cancel-chat-btn').onclick = () => {
+  document.getElementById('add-chat-modal').style.display = 'none';
+};
+document.getElementById('create-chat-btn').onclick = () => {
+  const errorEl = document.getElementById('add-chat-error');
+  errorEl.textContent = '';
+  const name = document.getElementById('new-group-name').value.trim();
+  createGroupChat(name, groupMembers, msg => { errorEl.textContent = msg; });
+};
+document.getElementById('new-group-name').addEventListener('keydown', e => {
+  if(e.key === 'Enter') document.getElementById('create-chat-btn').click();
+});
 
+// ===== Окно «Друзья» =====
 document.getElementById('friends-btn').onclick = () => {
   document.getElementById('add-friend-input').value = '';
   document.getElementById('friends-error').textContent = '';
-  peopleSearchResults = [];
+  peopleSearchQuery = '';
   // Если есть новые заявки — сразу показываем их
   friendsTab = Object.keys(friendRequestsCache).length ? 'incoming' : 'friends';
   renderFriendsModal();
@@ -3104,55 +3314,12 @@ document.getElementById('close-friends-btn').onclick = () => {
   document.getElementById('friends-modal').style.display = 'none';
 };
 document.getElementById('add-friend-input').addEventListener('input', e => {
-  clearTimeout(peopleSearchTimer);
-  const q = e.target.value;
-  peopleSearchTimer = setTimeout(() => runPeopleSearch(q), 250);
+  peopleSearchQuery = e.target.value;
+  renderFriendsModal();
 });
 document.querySelectorAll('#friends-tabs .seg-btn').forEach(b => b.onclick = () => {
   friendsTab = b.dataset.tab;
   renderFriendsModal();
-});
-document.getElementById('cancel-chat-btn').onclick = () => {
-  document.getElementById('add-chat-modal').style.display = 'none';
-};
-
-function addGroupMember(){
-  const input = document.getElementById('new-group-member-input');
-  const errorEl = document.getElementById('add-chat-error');
-  const uname = input.value.trim().toLowerCase();
-  errorEl.textContent = '';
-  if(!uname) return;
-  db.ref('usernames/' + uname).once('value').then(snap => {
-    if(!snap.exists()){ errorEl.textContent = 'Пользователь с таким логином не найден'; return; }
-    const uid = snap.val();
-    if(uid === myClientId){ errorEl.textContent = 'Это твой собственный логин'; return; }
-    if(groupMembers.find(m => m.uid === uid)){ errorEl.textContent = 'Этот человек уже добавлен'; return; }
-    groupMembers.push({ uid, username: uname });
-    renderGroupMembers();
-    input.value = '';
-  });
-}
-document.getElementById('add-group-member-btn').onclick = addGroupMember;
-document.getElementById('new-group-member-input').addEventListener('keydown', e => {
-  if(e.key === 'Enter'){ e.preventDefault(); addGroupMember(); }
-});
-
-document.getElementById('create-chat-btn').onclick = () => {
-  const errorEl = document.getElementById('add-chat-error');
-  errorEl.textContent = '';
-  if(addChatMode === 'dm'){
-    const partner = document.getElementById('new-chat-partner').value.trim();
-    startPrivateChat(partner, msg => { errorEl.textContent = msg; });
-  } else {
-    const name = document.getElementById('new-group-name').value.trim();
-    createGroupChat(name, groupMembers, msg => { errorEl.textContent = msg; });
-  }
-};
-document.getElementById('new-chat-partner').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('create-chat-btn').click();
-});
-document.getElementById('new-group-name').addEventListener('keydown', e => {
-  if(e.key === 'Enter') document.getElementById('create-chat-btn').click();
 });
 
 document.getElementById('back-btn').onclick = closeChat;
@@ -3398,6 +3565,7 @@ function addMemberToGroup(directUid, directUsername){
   });
 }
 document.getElementById('group-add-member-btn').onclick = () => addMemberToGroup();
+document.getElementById('group-add-member-input').addEventListener('input', renderGroupAddSuggestions);
 document.getElementById('group-add-member-input').addEventListener('keydown', e => {
   if(e.key === 'Enter'){ e.preventDefault(); addMemberToGroup(); }
 });
@@ -3679,7 +3847,7 @@ function avatarInitialsHtml(el, name, avatarUrl){
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
   } else {
-    el.style.backgroundImage = 'none';
+    el.style.backgroundImage = avatarGradient(name || '?');
     el.textContent = initials(name || '?');
   }
 }
