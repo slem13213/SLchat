@@ -8,7 +8,7 @@ const { handler } = require('../netlify/functions/send-push.js');
 
 module.exports = async (req, res) => {
   const body = typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
-  const result = await handler({ httpMethod: req.method, body });
+  const result = await handler({ httpMethod: req.method, body, headers: req.headers || {} });
   res.setHeader('Content-Type', 'application/json');
   res.status(result.statusCode).send(result.body);
 };

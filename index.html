@@ -1339,24 +1339,19 @@ if('serviceWorker' in navigator){
 // или недоступна — просто ничего не произойдёт (тихо игнорируем ошибку),
 // обычные уведомления в рамках открытой вкладки не зависят от этого
 async function pushNotifyChat(chat, previewText, mentions){
+  // Сервер сам проверит, что я вошёл и состою в этом чате, сам найдёт получателей
+  // (без заглушивших чат, кроме упомянутых через @) и сам подставит мой ник в заголовок
   try {
-    if(!chat || !chat.meta || !chat.meta.members) return;
-    // Не шлём push тем, кто заглушил этот чат
-    // (кроме тех, кого упомянули через @ — им приходит всегда)
-    const otherUids = Object.keys(chat.meta.members).filter(uid => uid !== myClientId && (!isMutedFor(uid, chat.id) || (mentions && mentions[uid])));
-    if(!otherUids.length) return;
-    const snaps = await Promise.all(otherUids.map(uid => db.ref('users/' + uid + '/fcmTokens').once('value')));
-    const tokens = [];
-    snaps.forEach(snap => { const val = snap.val(); if(val) tokens.push(...Object.keys(val)); });
-    if(!tokens.length) return;
-    fetch('/.netlify/functions/send-push', {
+    if(!chat || !chat.meta || !chat.meta.members || !auth.currentUser) return;
+    if(!Object.keys(chat.meta.members).some(uid => uid !== myClientId)) return;
+    const idToken = await auth.currentUser.getIdToken();
+    fetch('/api/send-push', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tokens, title: myProfile.name || 'SLchat', body: previewText, chatId: chat.id })
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + idToken },
+      body: JSON.stringify({ chatId: chat.id, body: String(previewText || '').slice(0, 200), mentions: mentions || null })
     }).catch(() => {});
   } catch(e) {}
 }
-
 // Логин, который получает значок "Разработчик" и уведомления о регистрациях
 const ADMIN_USERNAME = 'slem2';
 function isDevUsername(name){
@@ -1490,6 +1485,8 @@ function syncChatMembership(ids){
 function startApp(){
   db.ref('users').on('value', snap => {
     usersCache = snap.val() || {};
+    // Кто-то мог поменять «Кому видно, что я в сети» — пробуем снова тех, кто был скрыт
+    Object.keys(presenceCache).forEach(uid => { if(presenceCache[uid] && presenceCache[uid].hidden){ delete presenceCache[uid]; delete presenceWatched[uid]; } });
     refreshAllChatDisplays();
     renderFriendsModal();
     renderFriendsQuickpicks();
@@ -1523,17 +1520,20 @@ function startApp(){
 }
 
 // ===== Присутствие: "в сети" / "был(а) недавно" =====
-// Пишется всегда по-честному, а решение "показывать или нет" принимается
-// на экране у ТОГО, КТО СМОТРИТ — по настройке владельца профиля
+// Хранится в presence/{uid}. Правила базы отдают его только тем, кому разрешил
+// сам человек (настройка «Кому видно, что я в сети»), — обойти это нельзя.
 let onlineVisibility = 'all'; // 'all' | 'friends' | 'nobody' — моя собственная настройка
+let presenceCache = {};   // uid -> { online, lastSeen } или { hidden: true }
+let presenceWatched = {};
+let presenceRenderTimer = null;
 function setupPresence(){
+  // Старые поля в профиле больше не используются — убираем, чтобы их нельзя было подсмотреть
+  db.ref('users/' + myClientId).update({ online: null, lastSeen: null }).catch(() => {});
   db.ref('.info/connected').on('value', snap => {
     if(snap.val() !== true) return;
-    const onlineRef = db.ref('users/' + myClientId + '/online');
-    const lastSeenRef = db.ref('users/' + myClientId + '/lastSeen');
-    onlineRef.onDisconnect().set(false);
-    lastSeenRef.onDisconnect().set(Date.now());
-    onlineRef.set(true);
+    const ref = db.ref('presence/' + myClientId);
+    ref.onDisconnect().update({ online: false, lastSeen: firebase.database.ServerValue.TIMESTAMP });
+    ref.set({ online: true, lastSeen: Date.now() }).catch(() => {});
   });
   db.ref('users/' + myClientId + '/onlineVisibility').once('value').then(snap => {
     onlineVisibility = snap.val() || 'all';
@@ -1553,6 +1553,29 @@ function updateVisibilityButtons(){
 
 // Может ли ТЕКУЩИЙ пользователь видеть онлайн-статус пользователя targetUid,
 // с учётом его настройки приватности
+// Статус человека: подписываемся на него при первом обращении. Если правила не
+// разрешают его видеть — помечаем как скрытый.
+function presenceOf(uid){
+  if(!uid) return {};
+  if(!presenceWatched[uid] && myClientId){
+    presenceWatched[uid] = true;
+    db.ref('presence/' + uid).on('value', snap => {
+      presenceCache[uid] = snap.val() || {};
+      schedulePresenceRender();
+    }, () => { presenceCache[uid] = { hidden: true }; schedulePresenceRender(); });
+  }
+  return presenceCache[uid] || {};
+}
+function schedulePresenceRender(){
+  clearTimeout(presenceRenderTimer);
+  presenceRenderTimer = setTimeout(() => {
+    renderChatList();
+    refreshUserProfileIfOpen();
+    if(activeChatId){ const c = chats.find(x => x.id === activeChatId); if(c) renderChatHeaderStatus(c); }
+    if(document.getElementById('friends-modal').style.display === 'flex') renderFriendsModal();
+  }, 150);
+}
+
 function canSeeOnline(targetUid){
   if(targetUid === myClientId) return true;
   const u = usersCache[targetUid] || {};
@@ -1591,8 +1614,9 @@ function headerStatusTextForChat(chat){
   const otherUid = otherMemberUid(chat.meta);
   if(!otherUid) return '';
   if(!canSeeOnline(otherUid)) return '';
-  const u = usersCache[otherUid] || {};
-  return u.online ? 'в сети' : formatLastSeen(u.lastSeen);
+  const p = presenceOf(otherUid);
+  if(p.hidden) return '';
+  return p.online ? 'в сети' : formatLastSeen(p.lastSeen);
 }
 
 // ===== "Печатает..." — быстрый статус только для сейчас открытого чата =====
@@ -1645,6 +1669,7 @@ let friendsTab = 'friends';   // 'friends' | 'incoming' | 'outgoing'
 function watchFriends(){
   db.ref('friends/' + myClientId).on('value', snap => {
     friendsCache = snap.val() || {};
+    Object.keys(presenceCache).forEach(uid => { if(presenceCache[uid] && presenceCache[uid].hidden){ delete presenceCache[uid]; delete presenceWatched[uid]; } });
     renderFriendsModal();
     renderFriendsQuickpicks();
     refreshUserProfileIfOpen();
@@ -1726,10 +1751,11 @@ function removeFriend(uid){
 
 // Статус под именем человека: в сети / был(а) ... (с учётом его приватности)
 function userStatusText(uid){
-  const u = usersCache[uid] || {};
   if(!canSeeOnline(uid)) return { text: 'был(а) недавно', online: false };
-  if(u.online) return { text: 'в сети', online: true };
-  return { text: formatLastSeen(u.lastSeen), online: false };
+  const p = presenceOf(uid);
+  if(p.hidden) return { text: 'был(а) недавно', online: false };
+  if(p.online) return { text: 'в сети', online: true };
+  return { text: formatLastSeen(p.lastSeen), online: false };
 }
 
 // ===== Цветные аватарки: у каждого человека/группы свой градиент (как в Telegram) =====
@@ -1749,12 +1775,12 @@ function avatarGradient(key){
 }
 function avatarHtmlFor(name, avatar, key){
   return avatar
-    ? `<img src="${avatar}" class="avatar" style="object-fit:cover;" />`
+    ? `<img src="${safeUrl(avatar)}" class="avatar" style="object-fit:cover;" />`
     : `<div class="avatar" style="background-image:${avatarGradient(key || name)}">${escapeHtml(initials(name || '?'))}</div>`;
 }
 // В сети ли человек — с учётом его настройки приватности
 function isUserOnline(uid){
-  return !!uid && uid !== myClientId && canSeeOnline(uid) && !!(usersCache[uid] || {}).online;
+  return !!uid && uid !== myClientId && canSeeOnline(uid) && !!presenceOf(uid).online;
 }
 function avatarWithDot(innerHtml, online){
   return `<div class="av-wrap">${innerHtml}${online ? '<span class="online-dot"></span>' : ''}</div>`;
@@ -1977,7 +2003,7 @@ function renderUserProfile(){
   const u = usersCache[uid] || {};
   const name = u.username || '?';
   const av = document.getElementById('up-avatar');
-  if(u.avatar) av.innerHTML = `<img src="${u.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
+  if(u.avatar) av.innerHTML = `<img src="${safeUrl(u.avatar)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
   else { av.textContent = initials(name); av.style.backgroundImage = avatarGradient(uid); }
   if(u.avatar) av.style.backgroundImage = '';
   av.classList.toggle('dev-ring', isDevUsername(name));
@@ -2027,7 +2053,7 @@ function renderUserProfile(){
   common.forEach(c => {
     const row = document.createElement('div');
     row.className = 'person';
-    row.innerHTML = `${c.avatar ? `<img src="${c.avatar}" class="avatar" style="object-fit:cover;" />` : `<div class="avatar" style="background-image:${avatarGradient(c.id)}">👥</div>`}
+    row.innerHTML = `${c.avatar ? `<img src="${safeUrl(c.avatar)}" class="avatar" style="object-fit:cover;" />` : `<div class="avatar" style="background-image:${avatarGradient(c.id)}">👥</div>`}
       <div class="person-info"><div class="person-name">${escapeHtml(c.name)}</div>
       <div class="person-sub">${pluralMembers(Object.keys(c.meta.members || {}).length)}</div></div>`;
     row.onclick = () => { closeAllPeopleModals(); openChat(c.id); };
@@ -2402,6 +2428,14 @@ function applyProfileToUI(){
 }
 
 // ===== Новое: фильтры чатов, реакции, ответы, редактирование, эмодзи =====
+// Адрес картинки/видео/звука для вставки в страницу: пропускаем только настоящие
+// data:-файлы и https-ссылки и экранируем кавычки — чтобы через «аватарку» нельзя было
+// подсунуть вредоносный код
+function safeUrl(u){
+  const s = String(u == null ? '' : u);
+  if(!/^(data:(image|audio|video)\/[a-zA-Z0-9.+-]+[;,]|https:\/\/|blob:)/.test(s)) return '';
+  return escapeHtml(s);
+}
 function escapeHtml(s){
   return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
@@ -2772,7 +2806,7 @@ document.getElementById('empty-new-chat-btn').onclick = () => document.getElemen
 function syncNavAvatar(){
   const el = document.getElementById('nav-avatar');
   if(!el) return;
-  if(myProfile.avatar) el.innerHTML = `<img src="${myProfile.avatar}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
+  if(myProfile.avatar) el.innerHTML = `<img src="${safeUrl(myProfile.avatar)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;display:block;" />`;
   else { el.textContent = initials(myProfile.name || 'Я'); el.style.backgroundImage = avatarGradient(myClientId); }
 }
 
@@ -2871,7 +2905,7 @@ function chatAvatarHtml(chat){
   if(isSavedChat(chat)) return '<div class="avatar saved-avatar">⭐</div>';
   const isGroup = chat.meta && chat.meta.type === 'group';
   return chat.avatar
-    ? `<img src="${chat.avatar}" class="avatar" style="object-fit:cover;" />`
+    ? `<img src="${safeUrl(chat.avatar)}" class="avatar" style="object-fit:cover;" />`
     : `<div class="avatar" style="background-image:${avatarGradient(isGroup ? chat.id : (otherMemberUid(chat.meta) || chat.id))}">${isGroup ? '👥' : escapeHtml(initials(chat.name || '?'))}</div>`;
 }
 
@@ -3056,7 +3090,7 @@ function updateChatHeader(chat){
   document.getElementById('chat-header-name').innerHTML = escapeHtml(chat.name) + (!isGroup ? devPillHtml(chat.name) : '');
   const headerAvatar = document.getElementById('chat-header-avatar');
   const headerFallback = document.getElementById('chat-header-avatar-fallback');
-  if(chat.avatar){
+  if(safeUrl(chat.avatar)){
     headerAvatar.src = chat.avatar; headerAvatar.style.display = 'block';
     headerFallback.style.display = 'none';
   } else {
@@ -3206,15 +3240,15 @@ function renderMessages(){
     const replyHtml = m.replyTo ? `<div class="reply-quote" data-key="${escapeHtml(m.replyTo.key || '')}"><b>${escapeHtml(m.replyTo.name || '')}</b><span>${escapeHtml(m.replyTo.text || '')}</span></div>` : '';
     const imgs = messageImages(m);
     let photoHtml = '';
-    if(imgs.length === 1) photoHtml = `<img src="${imgs[0]}" class="msg-photo" />`;
+    if(imgs.length === 1) photoHtml = `<img src="${safeUrl(imgs[0])}" class="msg-photo" />`;
     else if(imgs.length > 1){
       const shown = imgs.slice(0, 6);
       photoHtml = `<div class="album n${Math.min(shown.length, 4)}${shown.length > 4 ? ' many' : ''}">` +
-        shown.map((src, k) => `<div class="album-cell"><img src="${src}" class="msg-photo" data-i="${k}" />${(k === shown.length - 1 && imgs.length > shown.length) ? `<span class="album-more">+${imgs.length - shown.length}</span>` : ''}</div>`).join('') +
+        shown.map((src, k) => `<div class="album-cell"><img src="${safeUrl(src)}" class="msg-photo" data-i="${k}" />${(k === shown.length - 1 && imgs.length > shown.length) ? `<span class="album-more">+${imgs.length - shown.length}</span>` : ''}</div>`).join('') +
         `</div>`;
     }
     const voiceHtml = m.audio ? `<div class="voice-msg"><button class="voice-play-btn">▶</button><div class="voice-body"><div class="voice-wave">${waveBarsHtml(m.audioWave)}</div><div class="voice-meta"><span class="voice-duration">${formatDuration(m.audioDuration)}</span><button class="voice-speed">${rateLabel(voiceRate)}</button></div></div></div>` : '';
-    const videoNoteHtml = m.videoNote ? `<div class="video-note-bubble"><video src="${m.videoNote}" ${m.videoNotePoster ? `poster="${m.videoNotePoster}"` : ''} playsinline muted loop preload="metadata"></video><div class="video-note-play-overlay">▶</div><span class="voice-duration" style="position:absolute;bottom:6px;right:10px;color:#fff;background:rgba(0,0,0,0.4);border-radius:8px;padding:1px 6px;">${formatDuration(m.videoNoteDuration)}</span></div>` : '';
+    const videoNoteHtml = m.videoNote ? `<div class="video-note-bubble"><video src="${safeUrl(m.videoNote)}" ${m.videoNotePoster ? `poster="${safeUrl(m.videoNotePoster)}"` : ''} playsinline muted loop preload="metadata"></video><div class="video-note-play-overlay">▶</div><span class="voice-duration" style="position:absolute;bottom:6px;right:10px;color:#fff;background:rgba(0,0,0,0.4);border-radius:8px;padding:1px 6px;">${formatDuration(m.videoNoteDuration)}</span></div>` : '';
     const stickerBlock = m.dice ? diceHtml(m.dice) : (m.sticker ? stickerHtml(m.sticker) : '');
     const pollBlock = m.poll ? pollHtml(m) : '';
     const noteHtml = m.noteReply ? `<div class="fwd-label">💭 Ответ на заметку «${escapeHtml(m.noteReply)}»</div>` : '';
@@ -3703,7 +3737,7 @@ function renderStoriesBar(){
   const mineDiv = document.createElement('div');
   mineDiv.className = 'story-item';
   const mineAvatarHtml = myProfile.avatar
-    ? `<img src="${myProfile.avatar}"/>`
+    ? `<img src="${safeUrl(myProfile.avatar)}"/>`
     : `<div class="avatar" style="width:100%;height:100%;background-image:${avatarGradient(myClientId)}">${initials(myProfile.name || 'Я')}</div>`;
   mineDiv.innerHTML = noteBubbleHtml(activeNote(myClientId), true) + `
     <div class="story-ring ${mineActive ? '' : 'mine'}">
@@ -3729,7 +3763,7 @@ function renderStoriesBar(){
     const name = u.username || s.username || '?';
     const avatar = u.avatar || s.avatar;
     const avatarHtml = avatar
-      ? `<img src="${avatar}"/>`
+      ? `<img src="${safeUrl(avatar)}"/>`
       : `<div class="avatar" style="width:100%;height:100%;background-image:${avatarGradient(uid)}">${escapeHtml(initials(name))}</div>`;
     const div = document.createElement('div');
     div.className = 'story-item';
@@ -4316,7 +4350,7 @@ function kickFromGroup(chat, uid){
 function setGroupAdmin(chat, uid, makeAdmin){
   if(groupRole(chat.meta, myClientId) !== 'owner' && !isMeDev()) return;
   db.ref('chats/' + chat.id + '/meta/admins/' + uid).set(makeAdmin ? true : null).then(() => {
-    postSystemMessage(chat.id, userName(uid) + (makeAdmin ? ' теперь админ' : ' больше не админ'));
+    postSystemMessage(chat.id, myProfile.name + (makeAdmin ? ' назначил(а) админом ' : ' снял(а) права админа с ') + userName(uid));
   }).catch(() => alert('Не получилось изменить права'));
 }
 
@@ -4406,7 +4440,7 @@ function renderGroupInfoMembers(chat){
   renderInviteSection(chat);
   const preview = document.getElementById('group-info-avatar-preview');
   const placeholder = document.getElementById('group-info-avatar-placeholder');
-  if(meta.avatar){
+  if(safeUrl(meta.avatar)){
     preview.src = meta.avatar; preview.style.display = 'block';
     placeholder.style.display = 'none';
   } else {
@@ -4536,6 +4570,11 @@ function watchDevData(){
   if(isMeDev()){
     document.getElementById('dev-panel-btn').style.display = 'block';
     db.ref('reports').on('value', snap => { reportsCache = snap.val() || {}; renderDevReports(); }, () => {});
+    db.ref('presence').on('value', snap => {
+      const all = snap.val() || {};
+      Object.keys(all).forEach(uid => { presenceCache[uid] = all[uid]; presenceWatched[uid] = true; });
+      schedulePresenceRender(); renderDevPanel();
+    }, () => {});
     db.ref('banned').on('value', snap => {
       bannedCache = snap.val() || {};
       refreshUserProfileIfOpen();
@@ -4594,14 +4633,14 @@ function renderDevPanel(){
   if(!isMeDev() || document.getElementById('dev-panel-modal').style.display !== 'flex') return;
   const uids = Object.keys(usersCache || {});
   document.getElementById('dev-stat-users').textContent = uids.length;
-  document.getElementById('dev-stat-online').textContent = uids.filter(u => usersCache[u] && usersCache[u].online).length;
+  document.getElementById('dev-stat-online').textContent = uids.filter(u => (presenceCache[u] || {}).online).length;
   document.getElementById('dev-stat-banned').textContent = Object.keys(bannedCache).length;
   const q = document.getElementById('dev-users-search').value.trim().toLowerCase();
   const list = document.getElementById('dev-users-list');
   list.innerHTML = '';
   uids
     .filter(u => u !== myClientId && ((usersCache[u] || {}).username || '').toLowerCase().includes(q))
-    .sort((a, b) => ((usersCache[b] || {}).online ? 1 : 0) - ((usersCache[a] || {}).online ? 1 : 0)
+    .sort((a, b) => ((presenceCache[b] || {}).online ? 1 : 0) - ((presenceCache[a] || {}).online ? 1 : 0)
       || ((usersCache[a] || {}).username || '').localeCompare((usersCache[b] || {}).username || ''))
     .slice(0, 100)
     .forEach(uid => {
@@ -4886,7 +4925,7 @@ function openPhotoPreview(){
   photoDraft.forEach((src, i) => {
     const cell = document.createElement('div');
     cell.className = 'pp-cell';
-    cell.innerHTML = `<img src="${src}"/><button title="Убрать">✕</button>`;
+    cell.innerHTML = `<img src="${safeUrl(src)}"/><button title="Убрать">✕</button>`;
     cell.querySelector('button').onclick = () => {
       photoDraft.splice(i, 1);
       if(photoDraft.length) openPhotoPreview(); else closePhotoPreview();
@@ -5323,7 +5362,7 @@ function postCard(p){
       <button class="icon-btn post-more" title="Ещё">⋯</button>
     </header>
     <div class="post-media">
-      <div class="post-track">${imgs.map(src => `<img src="${src}" loading="lazy" />`).join('')}</div>
+      <div class="post-track">${imgs.map(src => `<img src="${safeUrl(src)}" loading="lazy" />`).join('')}</div>
       ${imgs.length > 1 ? `<div class="post-dots">${imgs.map((_, i) => `<i class="${i === 0 ? 'on' : ''}"></i>`).join('')}</div><div class="post-count">1/${imgs.length}</div>` : ''}
     </div>
     <div class="post-actions">
@@ -5417,7 +5456,7 @@ function renderNewPostPreview(){
   newPostImages.forEach((src, i) => {
     const cell = document.createElement('div');
     cell.className = 'pp-cell';
-    cell.innerHTML = `<img src="${src}"/><button title="Убрать">✕</button>`;
+    cell.innerHTML = `<img src="${safeUrl(src)}"/><button title="Убрать">✕</button>`;
     cell.querySelector('button').onclick = () => { newPostImages.splice(i, 1); renderNewPostPreview(); };
     grid.appendChild(cell);
   });
@@ -5523,7 +5562,7 @@ function renderProfilePosts(uid){
     const imgs = postImages(p);
     const cell = document.createElement('button');
     cell.className = 'grid-cell';
-    cell.innerHTML = `<img src="${imgs[0] || ''}" loading="lazy" />${imgs.length > 1 ? '<span>❐</span>' : ''}`;
+    cell.innerHTML = `<img src="${safeUrl(imgs[0] || '')}" loading="lazy" />${imgs.length > 1 ? '<span>❐</span>' : ''}`;
     cell.onclick = () => openFeed({ uid, postId: p.id });
     box.appendChild(cell);
   });
@@ -5888,7 +5927,7 @@ function getOtherUidForChat(chatId){
 function avatarInitialsHtml(el, name, avatarUrl){
   if(avatarUrl){
     el.innerHTML = '';
-    el.style.backgroundImage = `url(${avatarUrl})`;
+    el.style.backgroundImage = safeUrl(avatarUrl) ? `url("${String(avatarUrl).replace(/"/g, '')}")` : 'none';
     el.style.backgroundSize = 'cover';
     el.style.backgroundPosition = 'center';
   } else {

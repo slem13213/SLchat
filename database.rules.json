@@ -2,20 +2,41 @@
   // Правила Realtime Database для SLchat.
   // Разработчик (slem2) = UID XrJsvEYNq9fggrYrvnjUR8jhsZ92.
   // Всё, чего здесь явно не разрешено, — запрещено.
+  //
+  // Защита от вредоносного кода (в том числе для старых версий сайта и APK):
+  //  - в текстах запрещены HTML-теги (всё, что похоже на «<буква»);
+  //  - картинки, звук и видео принимаются только как настоящие data:-файлы.
   "rules": {
 
     // Профили: читать может любой вошедший, менять — только свой.
-    // Ник после регистрации менять нельзя, а занять ник slem2 может только разработчик.
+    // Ник после регистрации менять нельзя; новый ник — только латиница, цифры и _;
+    // занять ник slem2 может только разработчик.
     "users": {
       ".read": "auth != null",
       "$uid": {
         ".write": "auth != null && $uid === auth.uid",
+        "avatar": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
         "note": { ".validate": "newData.hasChildren(['text', 'ts']) && newData.child('text').isString() && newData.child('text').val().length <= 60" },
         "bio": { ".validate": "newData.isString() && newData.val().length <= 140" },
         "statusEmoji": { ".validate": "newData.isString() && newData.val().length <= 8" },
+        // «В сети» теперь хранится в presence/ (с учётом приватности), сюда писать нельзя
+        "online": { ".validate": "false" },
+        "lastSeen": { ".validate": "false" },
         "username": {
-          ".validate": "newData.isString() && ((data.exists() && newData.val() === data.val()) || (!data.exists() && (root.child('usernames/' + newData.val().toLowerCase()).val() === $uid || !root.child('usernames/' + newData.val().toLowerCase()).exists()))) && (newData.val().toLowerCase() !== 'slem2' || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')"
+          ".validate": "newData.isString() && ((data.exists() && newData.val() === data.val()) || (!data.exists() && newData.val().length >= 3 && newData.val().length <= 20 && newData.val().matches(/^[A-Za-z0-9_]+$/) && (root.child('usernames/' + newData.val().toLowerCase()).val() === $uid || !root.child('usernames/' + newData.val().toLowerCase()).exists()))) && (newData.val().toLowerCase() !== 'slem2' || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')"
         }
+      }
+    },
+
+    // «В сети» / «был(а)»: видят только те, кому разрешил сам человек
+    // (настройка «Кому видно, что я в сети»: все / друзья / никто)
+    "presence": {
+      ".read": "auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92'",
+      "$uid": {
+        ".read": "auth != null && ($uid === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('users/' + $uid + '/onlineVisibility').val() !== 'nobody' && (root.child('users/' + $uid + '/onlineVisibility').val() !== 'friends' || root.child('friends/' + $uid + '/' + auth.uid).exists())))",
+        ".write": "auth != null && $uid === auth.uid",
+        "online": { ".validate": "newData.isBoolean()" },
+        "lastSeen": { ".validate": "newData.isNumber()" }
       }
     },
 
@@ -24,7 +45,7 @@
     "usernames": {
       ".read": true,
       "$name": {
-        ".write": "auth != null && !data.exists() && newData.val() === auth.uid"
+        ".write": "auth != null && !data.exists() && newData.val() === auth.uid && $name.length >= 3 && $name.length <= 20 && $name.matches(/^[a-z0-9_]+$/)"
       }
     },
 
@@ -42,10 +63,11 @@
           // Название и фото группы — создатель, админы, разработчик
           "name": {
             ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
-            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64"
+            ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 64 && !newData.val().matches(/<[a-zA-Z!\\/?]/)"
           },
           "avatar": {
-            ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')"
+            ".write": "auth != null && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
+            ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)"
           },
           // Закреплённое сообщение: в группе — создатель/админы, в личке — любой из двоих
           "pinned": {
@@ -80,11 +102,25 @@
         "messages": {
           ".read": "auth != null && (root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
           "$msgId": {
-            // Новое — участник от своего имени (или служебное); в «Регистрации» — только служебное.
-            // Изменить — только автор. Удалить — автор, создатель/админ группы, разработчик.
-            ".write": "auth != null && !root.child('banned/' + auth.uid).exists() && ((!data.exists() && newData.exists() && !($chatId.beginsWith('dm_') && root.child('blocked/' + $chatId.replace('dm_', '').replace(auth.uid, '').replace('_', '') + '/' + auth.uid).exists()) && ((root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && (newData.child('clientId').val() === auth.uid || newData.child('clientId').val() === 'system')) || ($chatId === 'admin_registration_log' && newData.child('clientId').val() === 'system'))) || (data.exists() && newData.exists() && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && data.child('clientId').val() === auth.uid && newData.child('clientId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('clientId').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('chats/' + $chatId + '/meta/type').val() === 'group' && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true)))))",
+            // Новое — участник от своего имени. Служебное («X добавил(а) Y») — только
+            // от своего ника: текст обязан начинаться с ника отправителя.
+            // В «Регистрации» — только служебное. Изменить — только автор.
+            // Удалить — автор, создатель/админ группы, разработчик.
+            ".write": "auth != null && !root.child('banned/' + auth.uid).exists() && ((!data.exists() && newData.exists() && !($chatId.beginsWith('dm_') && root.child('blocked/' + $chatId.replace('dm_', '').replace(auth.uid, '').replace('_', '') + '/' + auth.uid).exists()) && ((root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && (newData.child('clientId').val() === auth.uid || (newData.child('clientId').val() === 'system' && newData.child('text').isString() && newData.child('text').val().beginsWith(root.child('users/' + auth.uid + '/username').val() + ' ')))) || ($chatId === 'admin_registration_log' && newData.child('clientId').val() === 'system'))) || (data.exists() && newData.exists() && root.child('chats/' + $chatId + '/meta/members/' + auth.uid).exists() && data.child('clientId').val() === auth.uid && newData.child('clientId').val() === auth.uid) || (data.exists() && !newData.exists() && (data.child('clientId').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92' || (root.child('chats/' + $chatId + '/meta/type').val() === 'group' && (root.child('chats/' + $chatId + '/meta/createdBy').val() === auth.uid || root.child('chats/' + $chatId + '/meta/admins/' + auth.uid).val() === true)))))",
             // Своё сообщение подписывается настоящим ником — подделать «slem2» нельзя
-            ".validate": "newData.child('clientId').val() === 'system' || newData.child('senderName').val() === root.child('users/' + auth.uid + '/username').val() || (!root.child('users/' + auth.uid + '/username').exists() && newData.child('senderName').val().toLowerCase() !== 'slem2')",
+            ".validate": "newData.child('clientId').val() === 'system' || newData.child('senderName').val() === root.child('users/' + auth.uid + '/username').val() || (!root.child('users/' + auth.uid + '/username').exists() && newData.child('senderName').val().toLowerCase() !== 'slem2' && !newData.child('senderName').val().matches(/<[a-zA-Z!\\/?]/))",
+            // Текст без HTML-тегов (защищает и старые версии, которые показывали текст «как есть»)
+            "text": { ".validate": "newData.isString() && newData.val().length <= 10000 && !newData.val().matches(/<[a-zA-Z!\\/?]/)" },
+            "forwardedFrom": { ".validate": "newData.isString() && newData.val().length <= 64 && !newData.val().matches(/<[a-zA-Z!\\/?]/)" },
+            // Медиа — только настоящие data:-файлы нужного типа
+            "senderAvatar": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+            "image": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+            "images": {
+              "$i": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" }
+            },
+            "videoNotePoster": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+            "audio": { ".validate": "newData.isString() && newData.val().matches(/^data:audio\\/[a-z0-9.+-]+(;codecs=[A-Za-z0-9.,]+)?;base64,[A-Za-z0-9+\\/=]+$/)" },
+            "videoNote": { ".validate": "newData.isString() && newData.val().matches(/^data:video\\/[a-z0-9.+-]+(;codecs=[A-Za-z0-9.,]+)?;base64,[A-Za-z0-9+\\/=]+$/)" },
             "votes": {
               "$uid": {
                 // Голос в опросе — каждый только свой
@@ -162,10 +198,19 @@
       }
     },
 
+    // Истории: только свои; ник — настоящий, фото — настоящие картинки
     "stories": {
       ".read": "auth != null",
       "$uid": {
-        ".write": "auth != null && ($uid === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92') && (!newData.exists() || !root.child('banned/' + auth.uid).exists())"
+        ".write": "auth != null && ($uid === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92') && (!newData.exists() || !root.child('banned/' + auth.uid).exists())",
+        "username": { ".validate": "newData.val() === root.child('users/' + $uid + '/username').val()" },
+        "image": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+        "avatar": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+        "items": {
+          "$id": {
+            "image": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" }
+          }
+        }
       }
     },
 
@@ -206,6 +251,12 @@
       ".indexOn": ["uid"],
       "$postId": {
         ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && !root.child('banned/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))",
+        "username": { ".validate": "newData.val() === root.child('users/' + auth.uid + '/username').val()" },
+        "avatar": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" },
+        "images": {
+          "$i": { ".validate": "newData.isString() && newData.val().matches(/^data:image\\/(png|jpeg|jpg|gif|webp);base64,[A-Za-z0-9+\\/=]+$/)" }
+        },
+        "caption": { ".validate": "newData.isString() && newData.val().length <= 2000" },
         "likes": {
           "$uid": { ".write": "auth != null && $uid === auth.uid && (!newData.exists() || root.child('posts/' + $postId).exists())", ".validate": "newData.val() === true" }
         },
@@ -221,7 +272,8 @@
       "$postId": {
         ".write": "auth != null && !newData.exists() && (root.child('posts/' + $postId + '/uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')",
         "$cid": {
-          ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && root.child('posts/' + $postId).exists() && !root.child('banned/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || root.child('posts/' + $postId + '/uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))"
+          ".write": "auth != null && ((!data.exists() && newData.child('uid').val() === auth.uid && root.child('posts/' + $postId).exists() && !root.child('banned/' + auth.uid).exists()) || (data.exists() && !newData.exists() && (data.child('uid').val() === auth.uid || root.child('posts/' + $postId + '/uid').val() === auth.uid || auth.uid === 'XrJsvEYNq9fggrYrvnjUR8jhsZ92')))",
+          "text": { ".validate": "newData.isString() && newData.val().length <= 1000" }
         }
       }
     },
